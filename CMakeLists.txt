@@ -19,6 +19,24 @@ juce_add_plugin(KOMPRUSSR
 )
 juce_generate_juce_header(KOMPRUSSR)
 
+juce_add_binary_data(KOMPRUSSR_UI_DATA
+    NAMESPACE BinaryData
+    SOURCES
+        assets/ui/capas/panel_base_off.png
+        assets/ui/capas/scales_labels.png
+        assets/ui/capas/tubes_on.png
+        assets/ui/capas/lamp_on.png
+        assets/ui/capas/knob_shadows.png
+        assets/ui/capas/knob_compression@2x.png
+        assets/ui/capas/knob_makeup@2x.png
+        assets/ui/capas/knob_tube@2x.png
+        assets/ui/capas/knob_highlights_overlay.png
+        assets/ui/capas/tumbler_on@2x.png
+        assets/ui/capas/tumbler_off@2x.png
+        assets/ui/capas/vu_needle@2x.png
+        assets/ui/capas/vu_glass_overlay.png
+)
+
 target_sources(KOMPRUSSR PRIVATE
     Source/PluginProcessor.cpp
     Source/PluginEditor.cpp
@@ -31,6 +49,7 @@ target_compile_definitions(KOMPRUSSR PUBLIC
     JUCE_VST3_CAN_REPLACE_VST2=0
 )
 target_link_libraries(KOMPRUSSR PRIVATE
+    KOMPRUSSR_UI_DATA
     juce::juce_audio_utils
     juce::juce_dsp
     PUBLIC juce::juce_recommended_config_flags

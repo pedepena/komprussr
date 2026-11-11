@@ -22,17 +22,18 @@ Cambiar de válvula no resetea el resto de ajustes. Evitar saltos de volumen al 
 
 ## Interfaz
 - Lienzo de 1376 × 768 px, escalable de forma uniforme. Todo en PNG; **no se usan filtros SVG**.
-- `assets/ui/manifest.json` define posición, tamaño, pivote, rangos de giro, orden de apilado, estados y la calibración de la aguja. `assets/ui/LEEME.txt` lo resume.
+- `assets/ui/manifest.json` define posición, tamaño, pivote, rangos de giro, orden de apilado, estados y la calibración de la aguja. `assets/ui/LEEME.txt` lo resume. La interfaz final está integrada en `Source/PluginEditor.*`; las imágenes se incrustan desde CMake.
 - Los knobs giran alrededor del centro de su imagen (-135° a +135°; el selector Tube usa -120°, -60°, 0°, +60°, +120°). Las luces y sombras fijas no giran.
 - Make Up Gain a 0 dB corresponde a -45°.
 - La aguja del medidor usa la tabla `calibracion_db_a_grados` (interpolación lineal) y se dibuja recortada al círculo y a la ventana indicados en el manifest. En reposo marca 0 dB.
 - ON: tumbler_on visible, válvulas y piloto con fundido de opacidad a 1. OFF: tumbler_off, válvulas y piloto a 0, aguja en 0 dB.
+- Verificación pendiente en un host: orientación visual de los knobs y aguja y respuesta de interacción.
 
 ## Válvulas (fase 2)
 Cada modelo debe cambiar de forma coherente la curva de control de ganancia, la rodilla (knee), la respuesta a transitorios, la recuperación y la generación de armónicos (dependiente del nivel y de la reducción), sin ser una EQ estática. Todos deben ser estables y utilizables. Detalle en `docs/guia_valvulas_vari_mu.pdf`.
 
 ## Puntos sin decidir
-Valor por defecto de Compression; duración del calentamiento de las válvulas (sugerencia 1–2 s); comportamiento de knobs y selector en OFF; balística de la aguja. Pregunta al responsable o documenta la decisión por defecto.
+Compression conserva el valor por defecto definido por el procesador (0 %); no se ha cambiado. Decisiones adoptadas para la interfaz: calentamiento visual de 1,5 s; knobs y selector utilizables en OFF; suavizado de aguja de unos 300 ms. Estas decisiones son solo de presentación y no cambian el audio.
 
 ## Documentación
 `docs/KOMPRUSSR_KU-01_especificacion_UI.pdf` es la especificación completa de la interfaz.

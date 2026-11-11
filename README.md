@@ -2,7 +2,7 @@
 
 Compresor valvular tipo Vari-Mu en formato de plugin de audio (VST3), con selector de modelos de válvula y una interfaz de estética soviética de los años 50 y 60: chapa roja desgastada, knobs chicken head de baquelita y medidor de reducción de ganancia (GR).
 
-> **Estado:** en desarrollo. El diseño gráfico está terminado y el motor de audio tiene una primera versión funcional. La interfaz gráfica final (con las capas PNG) aún no está integrada en el código.
+> **Estado:** en desarrollo. El motor de audio tiene una primera versión funcional y la interfaz gráfica con capas PNG ya está integrada. La interfaz compila como VST3 Release; falta verificar su aspecto y controles dentro de un host de audio.
 
 ## Qué funciona hoy
 
@@ -25,13 +25,17 @@ Los valores de cada modelo son decisiones creativas iniciales, no mediciones de 
 
 ## Interfaz
 
-- **Ahora:** una interfaz provisional con controles estándar de JUCE (selector, dos knobs, interruptor y texto de GR).
-- **Prevista:** lienzo de 1376 × 768 px escalable, hecho con capas PNG (`assets/ui`), knobs que giran, selector de válvula, tumbler ON/OFF, válvulas que se iluminan y aguja de GR calibrada.
+- Lienzo de 1376 × 768 px, escalado uniformemente al redimensionar.
+- Capas PNG incrustadas en el VST3 y dibujadas según el orden y las coordenadas de `assets/ui/manifest.json`. Las capas móviles usan sus imágenes @2x; el panel base usa su imagen 1x.
+- Knobs de Compression y Make Up Gain, selector de cinco válvulas, interruptor ON/OFF y medidor GR calibrado. El valor de 0 dB de Make Up Gain sitúa el mando en -45°.
+- El piloto y las válvulas se iluminan durante 1,5 s al encender. Las luces y sombras de los knobs permanecen fijas. La aguja sigue la reducción de ganancia con suavizado de unos 300 ms.
+- Los controles están conectados a los parámetros guardables y automatizables existentes. No se modificó el motor de audio.
+- Pendiente: abrir el VST3 en un host y revisar visualmente la orientación de los mandos y la aguja, y el comportamiento de clic/arrastre.
 
 ## Pendiente
 
-- Integrar la interfaz gráfica final con las capas PNG.
-- Decidir el valor por defecto de Compression, el calentamiento de las válvulas al encender y el comportamiento de los controles en OFF.
+- Verificar visualmente en un host que los extremos de giro y la marca de reposo de la aguja coinciden con el arte; la compilación por sí sola no confirma la orientación visual.
+- Confirmar el valor por defecto de Compression con el responsable del proyecto.
 - Formato AU (ahora solo se compila VST3).
 - Probar en macOS y Linux (hoy solo se ha definido el proyecto de CMake).
 - Ajustar el sonido de cada modelo con escucha y mediciones.

@@ -1,20 +1,27 @@
 #pragma once
 #include "PluginProcessor.h"
 
-class KomprussrAudioProcessorEditor final : public juce::AudioProcessorEditor
+class KomprussrAudioProcessorEditor final : public juce::AudioProcessorEditor,
+                                            private juce::Timer
 {
 public:
     explicit KomprussrAudioProcessorEditor (KomprussrAudioProcessor&);
     void paint (juce::Graphics&) override;
     void resized() override;
+
 private:
+    void timerCallback() override;
+    juce::Rectangle<int> scaledBounds (int x, int y, int width, int height) const;
+    static float angleForDb (float db) noexcept;
+
     KomprussrAudioProcessor& processor;
-    juce::ComboBox tube;
-    juce::Slider compression, makeup;
-    juce::ToggleButton power { "ON" };
-    juce::Label title, grLabel;
-    juce::AudioProcessorValueTreeState::ComboBoxAttachment tubeAttachment;
-    juce::AudioProcessorValueTreeState::SliderAttachment compressionAttachment, makeupAttachment;
+    juce::Slider tube, compression, makeup;
+    juce::ToggleButton power { "" };
+    juce::AudioProcessorValueTreeState::SliderAttachment tubeAttachment, compressionAttachment, makeupAttachment;
     juce::AudioProcessorValueTreeState::ButtonAttachment powerAttachment;
+    juce::Image panel, scales, tubes, lamp, shadows, compressionImage, makeupImage, tubeImage;
+    juce::Image highlights, tumblerOn, tumblerOff, needle, glass;
+    float lampOpacity = 0.0f, needleDb = 0.0f;
+    double lastTickMs = 0.0;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (KomprussrAudioProcessorEditor)
 };
