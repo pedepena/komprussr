@@ -1,0 +1,25 @@
+# compilación
+build/
+cmake-build-*/
+out/
+Builds/
+*.vst3
+*.component
+*.exe
+*.dll
+*.pdb
+*.obj
+*.o
+
+# IDE y sistema
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+.DS_Store
+Thumbs.db
+
+# dependencias descargadas
+JUCE/
+_deps/

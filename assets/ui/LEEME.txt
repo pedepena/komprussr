@@ -1,0 +1,30 @@
+KOMPRUSSR KU-01 · PAQUETE GRAFICO FINAL (v2)
+============================================
+Lienzo de 1376 x 768 px, origen arriba a la izquierda. Todo en PNG con transparencia.
+Angulos: 0 grados = vertical hacia arriba; positivo = sentido horario.
+
+QUE ES CADA COSA
+- manifest.json ........ posiciones, tamanos, pivotes, rangos de giro, orden de apilado, estados y calibracion de la aguja.
+- capas/ ............... todas las capas. Las piezas que giran o cambian traen tambien version @2x (doble resolucion).
+- previews/ ............ como queda montado: ON, OFF y ON con otros valores.
+- KOMPRUSSR_KU-01_especificacion_UI.pdf ... especificacion completa del diseno.
+
+ORDEN DE DIBUJO (de abajo arriba)
+1 panel_base  2 scales_labels  3 tubes_on  4 lamp_on  5 knob_shadows  6 knob_compression  7 knob_makeup
+8 knob_tube  9 knob_highlights_overlay  10 tumbler_on / tumbler_off  11 vu_needle  12 vu_glass_overlay
+
+ESTADOS
+- ON : tumbler_on visible; tubes_on y lamp_on a opacidad 1 (fundido suave); aguja libre segun GR.
+- OFF: tumbler_off visible; tubes_on y lamp_on a opacidad 0; aguja en reposo (0 dB).
+
+GIROS
+- knob_compression: valor 0..100 %  ->  -135..+135 grados.
+- knob_makeup: valor -12..+24 dB (0 dB por defecto = -45 grados)  ->  -135..+135 grados.
+- knob_tube: 5 posiciones (6386U, 6BA6, 6BC8, 6K7, 6SK7) en -120, -60, 0, +60, +120 grados.
+- Los knobs y la aguja giran alrededor del CENTRO de su imagen. Las luces (knob_highlights_overlay) y las sombras (knob_shadows) NO giran.
+- vu_needle: grados segun la tabla de calibracion del manifest (interpolacion lineal). Dibujarla recortada al circulo
+  centro (683.2, 468.9), radio 258.4, y a la ventana (458,165,463x211), para que la punta no pase del arco.
+
+NOTAS
+- panel_base_off.png solo existe a 1x (la foto de origen es de 1376x768).
+- tornillo_1..4 ya estan colocados en el panel base; se incluyen sueltos por si se quieren mover.

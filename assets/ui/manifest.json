@@ -1,0 +1,299 @@
+{
+ "proyecto": "KOMPRUSSR KU-01",
+ "version": "2.0",
+ "lienzo": {
+  "ancho": 1376,
+  "alto": 768,
+  "origen": "arriba a la izquierda"
+ },
+ "convenciones": {
+  "angulos": "0 grados = vertical hacia arriba; positivo en sentido horario",
+  "escala": "los PNG @2x tienen el doble de píxeles; el panel base solo existe a 1x"
+ },
+ "estados": {
+  "ON": "tumbler_on visible, tubes_on y lamp_on a opacidad 1, aguja libre",
+  "OFF": "tumbler_off visible, tubes_on y lamp_on a opacidad 0, aguja en reposo (0 dB)"
+ },
+ "capas": [
+  {
+   "id": "panel_base",
+   "file": "capas/panel_base_off.png",
+   "x": 0,
+   "y": 0,
+   "width": 1376,
+   "height": 768,
+   "z": 1,
+   "comportamiento": "fija",
+   "nota": "panel vacío, tornillos, GR con estrella, válvulas y piloto apagados"
+  },
+  {
+   "id": "scales_labels",
+   "file": "capas/scales_labels.png",
+   "x": 0,
+   "y": 0,
+   "width": 1376,
+   "height": 768,
+   "z": 2,
+   "comportamiento": "fija"
+  },
+  {
+   "id": "tubes_on",
+   "file": "capas/tubes_on.png",
+   "x": 460,
+   "y": 472,
+   "width": 283,
+   "height": 193,
+   "z": 3,
+   "comportamiento": "opacidad",
+   "opacidad_off": 0.0,
+   "opacidad_on": 1.0,
+   "fundido": "calentamiento suave al pasar a ON (duración a definir en el motor)"
+  },
+  {
+   "id": "lamp_on",
+   "file": "capas/lamp_on.png",
+   "x": 1076,
+   "y": 53,
+   "width": 92,
+   "height": 92,
+   "z": 4,
+   "comportamiento": "opacidad",
+   "opacidad_off": 0.0,
+   "opacidad_on": 1.0,
+   "centro": [
+    1122,
+    99
+   ]
+  },
+  {
+   "id": "knob_shadows",
+   "file": "capas/knob_shadows.png",
+   "x": 0,
+   "y": 0,
+   "width": 1376,
+   "height": 768,
+   "z": 5,
+   "comportamiento": "fija",
+   "nota": "sombras proyectadas bajo knobs y tumbler; no giran"
+  },
+  {
+   "id": "knob_compression",
+   "file": "capas/knob_compression.png",
+   "x": 121,
+   "y": 347,
+   "width": 250,
+   "height": 250,
+   "z": 6,
+   "comportamiento": "giro",
+   "parametro": "compression",
+   "unidad": "%",
+   "valor_min": 0,
+   "valor_max": 100,
+   "angulo_min": -135,
+   "angulo_max": 135,
+   "pivote": [
+    125,
+    125
+   ],
+   "centro_en_lienzo": [
+    246,
+    472
+   ],
+   "archivo_2x": "capas/knob_compression@2x.png"
+  },
+  {
+   "id": "knob_makeup",
+   "file": "capas/knob_makeup.png",
+   "x": 1005,
+   "y": 347,
+   "width": 250,
+   "height": 250,
+   "z": 7,
+   "comportamiento": "giro",
+   "parametro": "make_up_gain",
+   "unidad": "dB",
+   "valor_min": -12,
+   "valor_max": 24,
+   "valor_defecto": 0,
+   "angulo_min": -135,
+   "angulo_max": 135,
+   "angulo_defecto": -45,
+   "pivote": [
+    125,
+    125
+   ],
+   "centro_en_lienzo": [
+    1130,
+    472
+   ],
+   "archivo_2x": "capas/knob_makeup@2x.png"
+  },
+  {
+   "id": "knob_tube",
+   "file": "capas/knob_tube.png",
+   "x": 806,
+   "y": 517,
+   "width": 120,
+   "height": 120,
+   "z": 8,
+   "comportamiento": "giro_en_pasos",
+   "parametro": "tube",
+   "posiciones": [
+    "6386U",
+    "6BA6",
+    "6BC8",
+    "6K7",
+    "6SK7"
+   ],
+   "angulos": [
+    -120,
+    -60,
+    0,
+    60,
+    120
+   ],
+   "pivote": [
+    60,
+    60
+   ],
+   "centro_en_lienzo": [
+    866,
+    577
+   ],
+   "archivo_2x": "capas/knob_tube@2x.png"
+  },
+  {
+   "id": "knob_highlights_overlay",
+   "file": "capas/knob_highlights_overlay.png",
+   "x": 0,
+   "y": 0,
+   "width": 1376,
+   "height": 768,
+   "z": 9,
+   "comportamiento": "fija",
+   "nota": "luces sobre knobs y tumbler; NO giran"
+  },
+  {
+   "id": "tumbler_on",
+   "file": "capas/tumbler_on.png",
+   "x": 1192,
+   "y": 107,
+   "width": 100,
+   "height": 100,
+   "z": 10,
+   "comportamiento": "estado",
+   "visible_cuando": "ON",
+   "centro_en_lienzo": [
+    1242,
+    157
+   ],
+   "archivo_2x": "capas/tumbler_on@2x.png"
+  },
+  {
+   "id": "tumbler_off",
+   "file": "capas/tumbler_off.png",
+   "x": 1192,
+   "y": 107,
+   "width": 100,
+   "height": 100,
+   "z": 10,
+   "comportamiento": "estado",
+   "visible_cuando": "OFF",
+   "centro_en_lienzo": [
+    1242,
+    157
+   ],
+   "archivo_2x": "capas/tumbler_off@2x.png"
+  },
+  {
+   "id": "vu_needle",
+   "file": "capas/vu_needle.png",
+   "x": 459,
+   "y": 132,
+   "width": 480,
+   "height": 480,
+   "z": 11,
+   "comportamiento": "giro",
+   "parametro": "gain_reduction",
+   "unidad": "dB",
+   "pivote": [
+    240,
+    240
+   ],
+   "pivote_en_lienzo": [
+    699,
+    372
+   ],
+   "reposo_db": 0,
+   "angulo_reposo": 28.1,
+   "calibracion_db_a_grados": [
+    [
+     -20,
+     -62.0
+    ],
+    [
+     -10,
+     -43.7
+    ],
+    [
+     -7,
+     -31.3
+    ],
+    [
+     -5,
+     -19.5
+    ],
+    [
+     -3,
+     -3.9
+    ],
+    [
+     -1,
+     16.3
+    ],
+    [
+     0,
+     28.1
+    ],
+    [
+     1,
+     40.9
+    ],
+    [
+     2,
+     54.2
+    ],
+    [
+     3,
+     67.8
+    ]
+   ],
+   "interpolacion": "lineal entre puntos",
+   "recorte": {
+    "circulo": {
+     "cx": 683.2,
+     "cy": 468.9,
+     "r": 258.4
+    },
+    "rectangulo": {
+     "x": 458,
+     "y": 165,
+     "w": 463,
+     "h": 211
+    }
+   },
+   "archivo_2x": "capas/vu_needle@2x.png",
+   "nota": "la aguja se dibuja recortada al arco y a la ventana; en OFF reposa en 0 dB"
+  },
+  {
+   "id": "vu_glass_overlay",
+   "file": "capas/vu_glass_overlay.png",
+   "x": 458,
+   "y": 165,
+   "width": 463,
+   "height": 211,
+   "z": 12,
+   "comportamiento": "fija"
+  }
+ ]
+}
