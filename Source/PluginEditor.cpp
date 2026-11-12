@@ -50,14 +50,6 @@ juce::Image makeValveGlowLayer (const juce::Image& source)
     return glow;
 }
 
-void drawRotatedHighlight (juce::Graphics& g, const juce::Image& image, int x, int y, int width, int height,
-                           float pivotX, float pivotY, float degrees)
-{
-    g.saveState();
-    g.reduceClipRegion (juce::Rectangle<int> (x, y, width, height));
-    drawRotatedLayer (g, image, 0, 0, 1376, 768, pivotX, pivotY, degrees);
-    g.restoreState();
-}
 }
 
 KomprussrAudioProcessorEditor::KomprussrAudioProcessorEditor (KomprussrAudioProcessor& p)
@@ -185,13 +177,7 @@ void KomprussrAudioProcessorEditor::paint (juce::Graphics& g)
     drawRotatedLayer (g, compressionImage, 121, 347, 250, 250, 246, 472, compressionAngle);
     drawRotatedLayer (g, makeupImage, 1005, 347, 250, 250, 1130, 472, makeupAngle);
     drawRotatedLayer (g, tubeImage, 806, 517, 120, 120, 866, 577, tubeAngles[tubeIndex]);
-    drawRotatedHighlight (g, highlights, 121, 347, 250, 250, 246, 472, compressionAngle);
-    drawRotatedHighlight (g, highlights, 1005, 347, 250, 250, 1130, 472, makeupAngle);
-    drawRotatedHighlight (g, highlights, 806, 517, 120, 120, 866, 577, tubeAngles[tubeIndex]);
-    g.saveState();
-    g.reduceClipRegion (juce::Rectangle<int> (1192, 107, 100, 100));
     drawLayer (g, highlights, 0, 0, 1376, 768);
-    g.restoreState();
     const auto isOn = power.getToggleState();
     drawLayer (g, isOn ? tumblerOn : tumblerOff, 1192, 107, 100, 100);
 
