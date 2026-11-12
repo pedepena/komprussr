@@ -23,12 +23,12 @@ Cambiar de válvula no resetea el resto de ajustes. Evitar saltos de volumen al 
 ## Interfaz
 - Lienzo de 1376 × 768 px, escalable de forma uniforme. Todo en PNG; **no se usan filtros SVG**.
 - `assets/ui/manifest.json` define posición, tamaño, pivote, rangos de giro, orden de apilado, estados y la calibración de la aguja. `assets/ui/LEEME.txt` lo resume. La interfaz final está integrada en `Source/PluginEditor.*`; las imágenes se incrustan desde CMake.
-- Los knobs giran alrededor del centro de su imagen (-135° a +135°; el selector Tube usa -120°, -60°, 0°, +60°, +120°). Las sombras permanecen fijas. Los PNG de los tres knobs contienen brillos/reflejos integrados, por lo que giran con el mando; no intentar fijarlos a ojo. Regenerar primero las imágenes sin reflejo y después dibujar `knob_highlights_overlay` fija según el manifest.
+- Los knobs giran alrededor del centro de su imagen (-135° a +135°; el selector Tube usa -120°, -60°, 0°, +60°, +120°). Las sombras permanecen fijas. Los PNG de los tres knobs contienen brillos/reflejos integrados, por lo que giran con el mando; no intentar fijarlos a ojo. La capa independiente `knob_highlights_overlay` se dibuja fija según el manifest. Para eliminar el giro de los reflejos integrados hay que regenerar primero las imágenes sin reflejo.
 - Make Up Gain a 0 dB corresponde a -45°.
 - La aguja del medidor usa la tabla `calibracion_db_a_grados` (interpolación lineal) y se dibuja recortada al círculo y a la ventana indicados en el manifest. En reposo marca 0 dB.
 - El panel base no contiene el texto GR ni la estrella. `gr_label.png` contiene el texto extraído, movido 12 px arriba y centrado en x=699; la estrella es una forma `juce::Path` de 5 puntas, color `#7A160F`, centrada en (699, 290.5), 36 × 36 px. Ambas capas quedan debajo de la aguja y del cristal.
 - ON: tumbler_on visible, válvulas y piloto con fundido de opacidad a 1. OFF: tumbler_off, válvulas y piloto con fundido a 0, aguja en 0 dB. El brillo de las válvulas se separa visualmente de la rejilla, que permanece fija y sin cambios de color.
-- La ventana inicia en 1032 × 576 px, restaura el último tamaño del estado APVTS y mantiene la proporción del lienzo al redimensionar. Los reflejos de Compression, Make Up Gain y Tube giran con sus mandos; el reflejo del tumbler queda fijo.
+- La ventana inicia en 1032 × 576 px, restaura el último tamaño del estado APVTS y mantiene la proporción del lienzo al redimensionar. Los reflejos que ya forman parte de los PNG de Compression, Make Up Gain y Tube giran con sus mandos; el overlay de luces separado y el reflejo del tumbler quedan fijos.
 - Verificación pendiente en un host: orientación visual de los knobs y aguja y respuesta de interacción.
 - El cristal lleva rayaduras y roces sutiles generados con semilla fija por `tools/generate_glass_scratches.js`; se incrustan las versiones 1x y @2x. La copia intacta está en `assets/ui/originales/vu_glass_overlay.png`.
 
