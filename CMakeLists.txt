@@ -31,6 +31,7 @@ juce_add_binary_data(KOMPRUSSR_UI_DATA
         assets/ui/capas/knob_makeup@2x.png
         assets/ui/capas/knob_tube@2x.png
         assets/ui/capas/knob_highlights_overlay.png
+        assets/ui/capas/gr_label.png
         assets/ui/capas/tumbler_on@2x.png
         assets/ui/capas/tumbler_off@2x.png
         assets/ui/capas/vu_needle@2x.png

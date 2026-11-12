@@ -20,7 +20,7 @@ private:
     juce::AudioProcessorValueTreeState::SliderAttachment tubeAttachment, compressionAttachment, makeupAttachment;
     juce::AudioProcessorValueTreeState::ButtonAttachment powerAttachment;
     juce::Image panel, scales, tubeGlow, lamp, shadows, compressionImage, makeupImage, tubeImage;
-    juce::Image highlights, tumblerOn, tumblerOff, needle, glass;
+    juce::Image highlights, tumblerOn, tumblerOff, needle, glass, grLabel;
     float lampOpacity = 0.0f, needleDb = 0.0f;
     double lastTickMs = 0.0;
     bool initialisingSize = true;

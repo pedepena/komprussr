@@ -73,7 +73,8 @@ KomprussrAudioProcessorEditor::KomprussrAudioProcessorEditor (KomprussrAudioProc
       makeupImage (resourceImage ("knob_makeup2x_png")), tubeImage (resourceImage ("knob_tube2x_png")),
       highlights (resourceImage ("knob_highlights_overlay_png")),
       tumblerOn (resourceImage ("tumbler_on2x_png")), tumblerOff (resourceImage ("tumbler_off2x_png")),
-      needle (resourceImage ("vu_needle2x_png")), glass (resourceImage ("vu_glass_overlay2x_png"))
+      needle (resourceImage ("vu_needle2x_png")), glass (resourceImage ("vu_glass_overlay2x_png")),
+      grLabel (resourceImage ("gr_label_png"))
 {
     constexpr int canvasWidth = 1376;
     constexpr int canvasHeight = 768;
@@ -193,6 +194,23 @@ void KomprussrAudioProcessorEditor::paint (juce::Graphics& g)
     g.restoreState();
     const auto isOn = power.getToggleState();
     drawLayer (g, isOn ? tumblerOn : tumblerOff, 1192, 107, 100, 100);
+
+    drawLayer (g, grLabel, 666, 318, 66, 35);
+    juce::Path grStar;
+    constexpr float grStarCentreX = 699.0f, grStarCentreY = 290.5f;
+    constexpr float grStarOuterRadius = 18.0f, grStarInnerRadius = 7.7f;
+    for (int i = 0; i < 10; ++i)
+    {
+        const auto angle = juce::MathConstants<float>::pi * (static_cast<float> (i) / 5.0f) - juce::MathConstants<float>::halfPi;
+        const auto radius = (i % 2 == 0) ? grStarOuterRadius : grStarInnerRadius;
+        const auto point = juce::Point<float> (grStarCentreX + std::cos (angle) * radius,
+                                                grStarCentreY + std::sin (angle) * radius);
+        if (i == 0) grStar.startNewSubPath (point);
+        else grStar.lineTo (point);
+    }
+    grStar.closeSubPath();
+    g.setColour (juce::Colour (0xff7a160f));
+    g.fillPath (grStar);
 
     g.saveState();
     juce::Path circle; circle.addEllipse (683.2f - 258.4f, 468.9f - 258.4f, 516.8f, 516.8f);

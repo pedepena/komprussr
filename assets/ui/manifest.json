@@ -24,7 +24,7 @@
    "height": 768,
    "z": 1,
    "comportamiento": "fija",
-   "nota": "panel vacío, tornillos, GR con estrella, válvulas y piloto apagados"
+   "nota": "panel base; GR y estrella se dibujan en capas separadas"
   },
   {
    "id": "scales_labels",
@@ -206,13 +206,39 @@
    "archivo_2x": "capas/tumbler_off@2x.png"
   },
   {
+   "id": "gr_label",
+   "file": "capas/gr_label.png",
+   "x": 666,
+   "y": 318,
+   "width": 66,
+   "height": 35,
+   "z": 11,
+   "comportamiento": "fija",
+   "nota": "texto extraído del panel original, centrado en el eje de la aguja y desplazado 12 px hacia arriba"
+  },
+  {
+   "id": "gr_star_vector",
+   "tipo": "vector",
+   "forma": "estrella de 5 puntas",
+   "x": 681,
+   "y": 272.5,
+   "width": 36,
+   "height": 36,
+   "centro": [699, 290.5],
+   "radio_exterior": 18,
+   "radio_interior": 7.7,
+   "color": "#7A160F",
+   "z": 12,
+   "comportamiento": "fija"
+  },
+  {
    "id": "vu_needle",
    "file": "capas/vu_needle.png",
    "x": 459,
    "y": 132,
    "width": 480,
    "height": 480,
-   "z": 11,
+   "z": 13,
    "comportamiento": "giro",
    "parametro": "gain_reduction",
    "unidad": "dB",
@@ -292,7 +318,7 @@
    "y": 165,
    "width": 463,
    "height": 211,
-   "z": 12,
+   "z": 14,
    "comportamiento": "fija",
    "archivo_2x": "capas/vu_glass_overlay@2x.png"
   }
