@@ -19,7 +19,7 @@ private:
     juce::ToggleButton power { "" };
     juce::AudioProcessorValueTreeState::SliderAttachment tubeAttachment, compressionAttachment, makeupAttachment;
     juce::AudioProcessorValueTreeState::ButtonAttachment powerAttachment;
-    juce::Image panel, scales, tubes, lamp, shadows, compressionImage, makeupImage, tubeImage;
+    juce::Image panel, scales, tubeGlow, lamp, shadows, compressionImage, makeupImage, tubeImage;
     juce::Image highlights, tumblerOn, tumblerOff, needle, glass;
     float lampOpacity = 0.0f, needleDb = 0.0f;
     double lastTickMs = 0.0;

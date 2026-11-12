@@ -25,10 +25,10 @@ Los valores de cada modelo son decisiones creativas iniciales, no mediciones de 
 
 ## Interfaz
 
-- Lienzo de 1376 × 768 px, escalado uniformemente al redimensionar.
+- Lienzo de 1376 × 768 px, con tamaño inicial de 1032 × 576 px y proporción fija al redimensionar.
 - Capas PNG incrustadas en el VST3 y dibujadas según el orden y las coordenadas de `assets/ui/manifest.json`. Las capas móviles usan sus imágenes @2x; el panel base usa su imagen 1x.
 - Knobs de Compression y Make Up Gain, selector de cinco válvulas, interruptor ON/OFF y medidor GR calibrado. El valor de 0 dB de Make Up Gain sitúa el mando en -45°.
-- El piloto y las válvulas se iluminan durante 1,5 s al encender. Las luces y sombras de los knobs permanecen fijas. La aguja sigue la reducción de ganancia con suavizado de unos 300 ms.
+- El piloto y el brillo de las válvulas hacen fundidos de 1,5 s al encender y apagar. La rejilla permanece fija; los reflejos de los knobs acompañan su giro. La aguja sigue la reducción de ganancia con suavizado de unos 300 ms.
 - Los controles están conectados a los parámetros guardables y automatizables existentes. No se modificó el motor de audio.
 - Pendiente: abrir el VST3 en un host y revisar visualmente la orientación de los mandos y la aguja, y el comportamiento de clic/arrastre.
 

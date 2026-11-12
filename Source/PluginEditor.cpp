@@ -28,6 +28,36 @@ void drawRotatedLayer (juce::Graphics& g, const juce::Image& image, float x, flo
     drawLayer (g, image, x, y, w, h);
     g.restoreState();
 }
+
+juce::Image makeValveGlowLayer (const juce::Image& source)
+{
+    if (! source.isValid()) return {};
+    auto glow = source.createCopy();
+    juce::Image::BitmapData pixels (glow, juce::Image::BitmapData::readWrite);
+    for (int y = 0; y < pixels.height; ++y)
+        for (int x = 0; x < pixels.width; ++x)
+        {
+            const auto colour = pixels.getPixelColour (x, y);
+            const auto red = static_cast<float> (colour.getRed()) / 255.0f;
+            const auto green = static_cast<float> (colour.getGreen()) / 255.0f;
+            const auto blue = static_cast<float> (colour.getBlue()) / 255.0f;
+            const auto warmth = juce::jlimit (0.0f, 1.0f, (red - juce::jmax (green, blue) - 0.08f) / 0.28f);
+            const auto brightness = juce::jlimit (0.0f, 1.0f, (red - 0.28f) / 0.38f);
+            const auto greenLight = juce::jlimit (0.0f, 1.0f, (green - 0.06f) / 0.24f);
+            const auto alpha = static_cast<float> (colour.getAlpha()) * warmth * brightness * greenLight;
+            pixels.setPixelColour (x, y, colour.withAlpha (static_cast<juce::uint8> (juce::roundToInt (alpha))));
+        }
+    return glow;
+}
+
+void drawRotatedHighlight (juce::Graphics& g, const juce::Image& image, int x, int y, int width, int height,
+                           float pivotX, float pivotY, float degrees)
+{
+    g.saveState();
+    g.reduceClipRegion (juce::Rectangle<int> (x, y, width, height));
+    drawRotatedLayer (g, image, 0, 0, 1376, 768, pivotX, pivotY, degrees);
+    g.restoreState();
+}
 }
 
 KomprussrAudioProcessorEditor::KomprussrAudioProcessorEditor (KomprussrAudioProcessor& p)
@@ -37,7 +67,7 @@ KomprussrAudioProcessorEditor::KomprussrAudioProcessorEditor (KomprussrAudioProc
       makeupAttachment (p.parameters, "make_up_gain", makeup),
       powerAttachment (p.parameters, "power", power),
       panel (resourceImage ("panel_base_off_png")), scales (resourceImage ("scales_labels_png")),
-      tubes (resourceImage ("tubes_on_png")), lamp (resourceImage ("lamp_on_png")),
+      tubeGlow (makeValveGlowLayer (resourceImage ("tubes_on_png"))), lamp (resourceImage ("lamp_on_png")),
       shadows (resourceImage ("knob_shadows_png")),
       compressionImage (resourceImage ("knob_compression2x_png")),
       makeupImage (resourceImage ("knob_makeup2x_png")), tubeImage (resourceImage ("knob_tube2x_png")),
@@ -45,9 +75,10 @@ KomprussrAudioProcessorEditor::KomprussrAudioProcessorEditor (KomprussrAudioProc
       tumblerOn (resourceImage ("tumbler_on2x_png")), tumblerOff (resourceImage ("tumbler_off2x_png")),
       needle (resourceImage ("vu_needle2x_png")), glass (resourceImage ("vu_glass_overlay_png"))
 {
-    setSize (1376, 768);
+    setSize (1032, 576);
     setResizable (true, true);
     setResizeLimits (688, 384, 2752, 1536);
+    getConstrainer()->setFixedAspectRatio (1376.0 / 768.0);
 
     compression.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
     compression.setTextBoxStyle (juce::Slider::NoTextBox, false, 0, 0);
@@ -117,7 +148,7 @@ void KomprussrAudioProcessorEditor::paint (juce::Graphics& g)
 
     drawLayer (g, panel, 0, 0, 1376, 768);
     drawLayer (g, scales, 0, 0, 1376, 768);
-    g.setOpacity (lampOpacity); drawLayer (g, tubes, 460, 472, 283, 193); drawLayer (g, lamp, 1076, 53, 92, 92);
+    g.setOpacity (lampOpacity); drawLayer (g, tubeGlow, 460, 472, 283, 193); drawLayer (g, lamp, 1076, 53, 92, 92);
     g.setOpacity (1.0f);
     drawLayer (g, shadows, 0, 0, 1376, 768);
 
@@ -128,7 +159,13 @@ void KomprussrAudioProcessorEditor::paint (juce::Graphics& g)
     drawRotatedLayer (g, compressionImage, 121, 347, 250, 250, 246, 472, compressionAngle);
     drawRotatedLayer (g, makeupImage, 1005, 347, 250, 250, 1130, 472, makeupAngle);
     drawRotatedLayer (g, tubeImage, 806, 517, 120, 120, 866, 577, tubeAngles[tubeIndex]);
+    drawRotatedHighlight (g, highlights, 121, 347, 250, 250, 246, 472, compressionAngle);
+    drawRotatedHighlight (g, highlights, 1005, 347, 250, 250, 1130, 472, makeupAngle);
+    drawRotatedHighlight (g, highlights, 806, 517, 120, 120, 866, 577, tubeAngles[tubeIndex]);
+    g.saveState();
+    g.reduceClipRegion (juce::Rectangle<int> (1192, 107, 100, 100));
     drawLayer (g, highlights, 0, 0, 1376, 768);
+    g.restoreState();
     const auto isOn = power.getToggleState();
     drawLayer (g, isOn ? tumblerOn : tumblerOff, 1192, 107, 100, 100);
 
@@ -156,10 +193,8 @@ void KomprussrAudioProcessorEditor::timerCallback()
     const auto deltaSeconds = lastTickMs > 0.0 ? juce::jlimit (0.0, 0.1, (now - lastTickMs) / 1000.0) : 1.0 / 30.0;
     lastTickMs = now;
     const auto targetOpacity = power.getToggleState() ? 1.0f : 0.0f;
-    if (targetOpacity > lampOpacity)
-        lampOpacity = juce::jmin (targetOpacity, lampOpacity + static_cast<float> (deltaSeconds / 1.5));
-    else
-        lampOpacity = targetOpacity;
+    const auto fadeStep = static_cast<float> (deltaSeconds / 1.5);
+    lampOpacity += juce::jlimit (-fadeStep, fadeStep, targetOpacity - lampOpacity);
     const auto targetDb = power.getToggleState()
         ? -processor.gainReductionDb.load (std::memory_order_relaxed) : 0.0f;
     const auto needleAlpha = 1.0f - std::exp (-static_cast<float> (deltaSeconds) / 0.3f);
