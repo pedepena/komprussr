@@ -293,7 +293,8 @@
    "width": 463,
    "height": 211,
    "z": 12,
-   "comportamiento": "fija"
+   "comportamiento": "fija",
+   "archivo_2x": "capas/vu_glass_overlay@2x.png"
   }
  ]
 }

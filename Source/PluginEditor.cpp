@@ -73,7 +73,7 @@ KomprussrAudioProcessorEditor::KomprussrAudioProcessorEditor (KomprussrAudioProc
       makeupImage (resourceImage ("knob_makeup2x_png")), tubeImage (resourceImage ("knob_tube2x_png")),
       highlights (resourceImage ("knob_highlights_overlay_png")),
       tumblerOn (resourceImage ("tumbler_on2x_png")), tumblerOff (resourceImage ("tumbler_off2x_png")),
-      needle (resourceImage ("vu_needle2x_png")), glass (resourceImage ("vu_glass_overlay_png"))
+      needle (resourceImage ("vu_needle2x_png")), glass (resourceImage ("vu_glass_overlay2x_png"))
 {
     constexpr int canvasWidth = 1376;
     constexpr int canvasHeight = 768;

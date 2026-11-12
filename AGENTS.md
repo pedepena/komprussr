@@ -23,12 +23,13 @@ Cambiar de válvula no resetea el resto de ajustes. Evitar saltos de volumen al 
 ## Interfaz
 - Lienzo de 1376 × 768 px, escalable de forma uniforme. Todo en PNG; **no se usan filtros SVG**.
 - `assets/ui/manifest.json` define posición, tamaño, pivote, rangos de giro, orden de apilado, estados y la calibración de la aguja. `assets/ui/LEEME.txt` lo resume. La interfaz final está integrada en `Source/PluginEditor.*`; las imágenes se incrustan desde CMake.
-- Los knobs giran alrededor del centro de su imagen (-135° a +135°; el selector Tube usa -120°, -60°, 0°, +60°, +120°). Las sombras permanecen fijas y los reflejos de cada mando giran con él.
+- Los knobs giran alrededor del centro de su imagen (-135° a +135°; el selector Tube usa -120°, -60°, 0°, +60°, +120°). Las sombras permanecen fijas. Los PNG de los tres knobs contienen brillos/reflejos integrados, por lo que giran con el mando; no intentar fijarlos a ojo. Regenerar primero las imágenes sin reflejo y después dibujar `knob_highlights_overlay` fija según el manifest.
 - Make Up Gain a 0 dB corresponde a -45°.
 - La aguja del medidor usa la tabla `calibracion_db_a_grados` (interpolación lineal) y se dibuja recortada al círculo y a la ventana indicados en el manifest. En reposo marca 0 dB.
 - ON: tumbler_on visible, válvulas y piloto con fundido de opacidad a 1. OFF: tumbler_off, válvulas y piloto con fundido a 0, aguja en 0 dB. El brillo de las válvulas se separa visualmente de la rejilla, que permanece fija y sin cambios de color.
 - La ventana inicia en 1032 × 576 px, restaura el último tamaño del estado APVTS y mantiene la proporción del lienzo al redimensionar. Los reflejos de Compression, Make Up Gain y Tube giran con sus mandos; el reflejo del tumbler queda fijo.
 - Verificación pendiente en un host: orientación visual de los knobs y aguja y respuesta de interacción.
+- El cristal lleva rayaduras y roces sutiles generados con semilla fija por `tools/generate_glass_scratches.js`; se incrustan las versiones 1x y @2x. La copia intacta está en `assets/ui/originales/vu_glass_overlay.png`.
 
 ## Válvulas (fase 2)
 Cada modelo debe cambiar de forma coherente la curva de control de ganancia, la rodilla (knee), la respuesta a transitorios, la recuperación y la generación de armónicos (dependiente del nivel y de la reducción), sin ser una EQ estática. Todos deben ser estables y utilizables. Detalle en `docs/guia_valvulas_vari_mu.pdf`.

@@ -35,6 +35,7 @@ juce_add_binary_data(KOMPRUSSR_UI_DATA
         assets/ui/capas/tumbler_off@2x.png
         assets/ui/capas/vu_needle@2x.png
         assets/ui/capas/vu_glass_overlay.png
+        assets/ui/capas/vu_glass_overlay@2x.png
 )
 
 target_sources(KOMPRUSSR PRIVATE

@@ -26,15 +26,16 @@ Los valores de cada modelo son decisiones creativas iniciales, no mediciones de 
 ## Interfaz
 
 - Lienzo de 1376 × 768 px, con tamaño inicial de 1032 × 576 px, proporción fija y último tamaño redimensionado guardado en el estado del proyecto.
-- Capas PNG incrustadas en el VST3 y dibujadas según el orden y las coordenadas de `assets/ui/manifest.json`. Las capas móviles usan sus imágenes @2x; el panel base usa su imagen 1x.
+- Capas PNG incrustadas en el VST3 y dibujadas según el orden y las coordenadas de `assets/ui/manifest.json`. Las capas móviles y el cristal del medidor usan sus imágenes @2x; el panel base usa su imagen 1x. El cristal lleva arañazos y roces sutiles generados con semilla fija por `tools/generate_glass_scratches.js`.
 - Knobs de Compression y Make Up Gain, selector de cinco válvulas, interruptor ON/OFF y medidor GR calibrado. El valor de 0 dB de Make Up Gain sitúa el mando en -45°.
-- El piloto y el brillo de las válvulas hacen fundidos de 1,5 s al encender y apagar. La rejilla permanece fija; los reflejos de los knobs acompañan su giro. La aguja sigue la reducción de ganancia con suavizado de unos 300 ms.
+- El piloto y el brillo de las válvulas hacen fundidos de 1,5 s al encender y apagar. La rejilla permanece fija. Los reflejos integrados en las imágenes de los knobs giran con ellos; para fijarlos hace falta regenerar los tres PNG sin esos reflejos. La aguja sigue la reducción de ganancia con suavizado de unos 300 ms.
 - Los controles están conectados a los parámetros guardables y automatizables existentes. No se modificó el motor de audio.
-- Pendiente: abrir el VST3 en un host y revisar visualmente la orientación de los mandos y la aguja, y el comportamiento de clic/arrastre.
+- Pendiente: regenerar los PNG de knobs sin reflejos integrados antes de fijar su brillo; abrir el VST3 en un host y revisar visualmente orientación y controles.
 
 ## Pendiente
 
 - Verificar visualmente en un host que los extremos de giro y la marca de reposo de la aguja coinciden con el arte; la compilación por sí sola no confirma la orientación visual.
+- Regenerar los PNG de Compression, Make Up Gain y Tube sin brillos integrados para poder dibujar los reflejos como una capa fija independiente.
 - Confirmar el valor por defecto de Compression con el responsable del proyecto.
 - Formato AU (ahora solo se compila VST3).
 - Probar en macOS y Linux (hoy solo se ha definido el proyecto de CMake).
