@@ -75,10 +75,35 @@ KomprussrAudioProcessorEditor::KomprussrAudioProcessorEditor (KomprussrAudioProc
       tumblerOn (resourceImage ("tumbler_on2x_png")), tumblerOff (resourceImage ("tumbler_off2x_png")),
       needle (resourceImage ("vu_needle2x_png")), glass (resourceImage ("vu_glass_overlay_png"))
 {
-    setSize (1032, 576);
+    constexpr int canvasWidth = 1376;
+    constexpr int canvasHeight = 768;
+    constexpr int defaultWidth = 1032;
+    constexpr int defaultHeight = 576;
+    constexpr double minimumScale = 0.5;
+    constexpr double maximumScale = 2.0;
+
+    const auto savedWidth = static_cast<int> (processor.parameters.state.getProperty ("uiEditorWidth", 0));
+    const auto savedHeight = static_cast<int> (processor.parameters.state.getProperty ("uiEditorHeight", 0));
+    auto restoredWidth = defaultWidth;
+    auto restoredHeight = defaultHeight;
+
+    if (savedWidth > 0 && savedHeight > 0)
+    {
+        const auto widthScale = static_cast<double> (savedWidth) / canvasWidth;
+        const auto heightScale = static_cast<double> (savedHeight) / canvasHeight;
+        if (std::abs (widthScale - heightScale) <= 0.01)
+        {
+            const auto scale = juce::jlimit (minimumScale, maximumScale, (widthScale + heightScale) * 0.5);
+            restoredWidth = juce::roundToInt (canvasWidth * scale);
+            restoredHeight = juce::roundToInt (canvasHeight * scale);
+        }
+    }
+
+    setSize (restoredWidth, restoredHeight);
     setResizable (true, true);
     setResizeLimits (688, 384, 2752, 1536);
     getConstrainer()->setFixedAspectRatio (1376.0 / 768.0);
+    initialisingSize = false;
 
     compression.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
     compression.setTextBoxStyle (juce::Slider::NoTextBox, false, 0, 0);
@@ -185,6 +210,23 @@ void KomprussrAudioProcessorEditor::resized()
     makeup.setBounds (scaledBounds (1005, 347, 250, 250));
     tube.setBounds (scaledBounds (806, 517, 120, 120));
     power.setBounds (scaledBounds (1192, 107, 100, 100));
+
+    if (! initialisingSize)
+    {
+        constexpr double minimumScale = 0.5;
+        constexpr double maximumScale = 2.0;
+        const auto scale = juce::jlimit (minimumScale, maximumScale,
+            juce::jmin (getWidth() / 1376.0, getHeight() / 768.0));
+        const auto storedWidth = juce::roundToInt (1376.0 * scale);
+        const auto storedHeight = juce::roundToInt (768.0 * scale);
+        auto& state = processor.parameters.state;
+        if (static_cast<int> (state.getProperty ("uiEditorWidth", 0)) != storedWidth
+            || static_cast<int> (state.getProperty ("uiEditorHeight", 0)) != storedHeight)
+        {
+            state.setProperty ("uiEditorWidth", storedWidth, nullptr);
+            state.setProperty ("uiEditorHeight", storedHeight, nullptr);
+        }
+    }
 }
 
 void KomprussrAudioProcessorEditor::timerCallback()

@@ -23,5 +23,6 @@ private:
     juce::Image highlights, tumblerOn, tumblerOff, needle, glass;
     float lampOpacity = 0.0f, needleDb = 0.0f;
     double lastTickMs = 0.0;
+    bool initialisingSize = true;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (KomprussrAudioProcessorEditor)
 };

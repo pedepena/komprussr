@@ -27,7 +27,7 @@ Cambiar de válvula no resetea el resto de ajustes. Evitar saltos de volumen al 
 - Make Up Gain a 0 dB corresponde a -45°.
 - La aguja del medidor usa la tabla `calibracion_db_a_grados` (interpolación lineal) y se dibuja recortada al círculo y a la ventana indicados en el manifest. En reposo marca 0 dB.
 - ON: tumbler_on visible, válvulas y piloto con fundido de opacidad a 1. OFF: tumbler_off, válvulas y piloto con fundido a 0, aguja en 0 dB. El brillo de las válvulas se separa visualmente de la rejilla, que permanece fija y sin cambios de color.
-- La ventana inicia en 1032 × 576 px y mantiene la proporción del lienzo al redimensionar. Los reflejos de Compression, Make Up Gain y Tube giran con sus mandos; el reflejo del tumbler queda fijo.
+- La ventana inicia en 1032 × 576 px, restaura el último tamaño del estado APVTS y mantiene la proporción del lienzo al redimensionar. Los reflejos de Compression, Make Up Gain y Tube giran con sus mandos; el reflejo del tumbler queda fijo.
 - Verificación pendiente en un host: orientación visual de los knobs y aguja y respuesta de interacción.
 
 ## Válvulas (fase 2)
