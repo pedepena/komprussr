@@ -8,9 +8,11 @@ El selector conserva las cinco posiciones definidas por la interfaz: 6386U, 6BA6
 
 ## Qué representa el DSP
 
-Cada perfil contiene desplazamiento de umbral, ratio, knee, tiempos de ataque y recuperación, y coeficientes de saturación. El detector de envolvente controla reducción de ganancia; una curva de knee suave evita una transición abrupta. La saturación acotada depende de la reducción activa y añade términos pares e impares, por lo que el timbre varía con señal y compresión en vez de actuar como EQ fija. La salida aplica una pequeña compensación por perfil.
+El umbral recorre de -6 a -40 dBFS entre Compression 0 % y 100 %, más el desplazamiento propio de cada perfil. La compresión está inactiva a 0 %; entre 0 y 100 %, la ratio interpola desde 1,25:1 hasta el máximo del perfil: 2:1 para 6386U, 2,5:1 para 6BA6, 3:1 para 6BC8, 2,8:1 para 6K7 y 4:1 para 6SK7. Cada perfil define además knee, ataque, recuperación rápida, recuperación lenta y el punto de transición entre ambas recuperaciones.
 
-Solo la identidad/tipo de válvula y su uso histórico como elemento de control de ganancia son afirmaciones técnicas generales. Los valores numéricos, las curvas, la balística, el balance armónico y la compensación son decisiones creativas iniciales; no proceden de mediciones de circuitos concretos ni constituyen una emulación física. Deben ajustarse mediante escucha y mediciones.
+La señal comprimida alimenta una saturación sobremuestreada. Su intensidad depende de la reducción de ganancia aplicada y del nivel detectado; con Compression 0 % no añade saturación. Se conserva un filtro de bloqueo de continua, pero se ha retirado el paso bajo fijo por válvula para que el carácter no dependa de una EQ estática. Los bloques mayores que el bloque preparado se procesan por fragmentos, sin reservar memoria en `processBlock`.
+
+Los perfiles son decisiones creativas iniciales inspiradas en las válvulas, no emulaciones físicas ni ajustes obtenidos de circuitos concretos. Deben afinarse mediante escucha y mediciones.
 
 ## Comprobación reproducible
 
