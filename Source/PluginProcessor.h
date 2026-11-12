@@ -35,21 +35,23 @@ public:
 private:
     struct ValveModel
     {
-        float thresholdOffsetDb, maximumRatio, kneeDb, attackMs;
-        float fastReleaseMs, slowReleaseMs, releaseSplitDb, harmonicDrive;
-        float evenHarmonic, oddHarmonic, makeupTrimDb, maximumDrive;
+        float thresholdOffsetDb, maximumRatio, curveExponent, kneeDb, attackMs;
+        float fastReleaseMs, slowReleaseMs, slowReleaseMix, harmonicDrive;
+        float evenHarmonic, oddHarmonic, makeupTrimDb, toneCutoffHz, maximumDrive;
+        float curveHardness, transientGrain, asymmetry;
     };
     static const ValveModel& modelFor (int index) noexcept;
 
     double currentSampleRate = 44100.0;
     float envelopeSquared = 0.0f;
-    float smoothedGain = 1.0f;
+    float fastReductionDb = 0.0f, slowReductionDb = 0.0f;
     juce::dsp::Oversampling<float> valveOversampling { 2, 1, juce::dsp::Oversampling<float>::filterHalfBandPolyphaseIIR };
     juce::AudioBuffer<float> oversampledBuffer;
     juce::AudioBuffer<float> colourBuffer;
     int activeTube = 0, previousTube = 0;
     int modelFadeSamples = 0;
     static constexpr int modelFadeLength = 512;
-    float dcInput[5][2] {}, dcOutput[5][2] {};
+    float reductionGainTable[6001] {};
+    float dcInput[5][2] {}, dcOutput[5][2] {}, toneState[5][2] {}, transientEnvelope[5][2] {};
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (KomprussrAudioProcessor)
 };
