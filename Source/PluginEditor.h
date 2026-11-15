@@ -1,5 +1,6 @@
 #pragma once
 #include "PluginProcessor.h"
+#include "SettingsPanel.h"
 
 class KomprussrAudioProcessorEditor final : public juce::AudioProcessorEditor,
                                             private juce::Timer
@@ -19,6 +20,8 @@ private:
     juce::ToggleButton power { "" };
     juce::AudioProcessorValueTreeState::SliderAttachment tubeAttachment, compressionAttachment, makeupAttachment;
     juce::AudioProcessorValueTreeState::ButtonAttachment powerAttachment;
+    std::unique_ptr<juce::Button> settingsButton;
+    std::unique_ptr<SettingsPanel> settingsPanel;
     juce::Image panel, scales, tubeGlow, lamp, shadows, compressionImage, makeupImage, tubeImage;
     juce::Image highlights, tumblerOn, tumblerOff, needle, glass, grLabel;
     float lampOpacity = 0.0f, needleDb = 0.0f;

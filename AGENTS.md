@@ -5,7 +5,7 @@ Plugin de audio VST3/AU en C++ con JUCE: compresor valvular tipo Vari-Mu. Proyec
 ## Reglas de trabajo
 - Antes de modificar código, inspecciona el proyecto y di qué archivos vas a tocar. No inventes clases, archivos ni APIs: adáptate al código real.
 - Código de audio seguro para tiempo real: sin asignaciones de memoria, bloqueos ni operaciones pesadas en el hilo de audio.
-- Sin controles extra ni función A/B en esta fase. No añadas etapas, topologías ni combinaciones de válvulas.
+- Sin controles extra de sonido ni función A/B en esta fase. El engranaje, las pestañas About/Manual/Settings y la casilla de comprobación de actualizaciones son solo elementos de interfaz: no son controles de sonido ni parámetros, no se automatizan ni se guardan en el estado del proyecto. La preferencia y la fecha de consulta viven en un archivo de ajustes del usuario. La comprobación automática de versiones es la única conexión automática a internet.
 - No afirmes que hay emulación física exacta de ningún equipo: son modelos inspirados en las válvulas.
 - Todo se hace por fases: (1) interfaz y parámetros con el audio sin procesar, (2) motor de audio.
 
@@ -28,6 +28,7 @@ Cambiar de válvula no resetea el resto de ajustes. Evitar saltos de volumen al 
 - La aguja del medidor usa la tabla `calibracion_db_a_grados` (interpolación lineal) y se dibuja recortada al círculo y a la ventana indicados en el manifest. En reposo marca 0 dB.
 - El panel base no contiene el texto GR ni la estrella. `gr_label.png` contiene el texto extraído, movido 12 px arriba y centrado en x=699; la estrella es una forma `juce::Path` de 5 puntas, color `#7A160F`, centrada en (699, 290.5), 36 × 36 px. Ambas capas quedan debajo de la aguja y del cristal.
 - ON: tumbler_on visible, válvulas y piloto con fundido de opacidad a 1. OFF: tumbler_off, válvulas y piloto con fundido a 0, aguja en 0 dB. El brillo de las válvulas se separa visualmente de la rejilla, que permanece fija y sin cambios de color.
+- El engranaje vectorial abre una capa de ajustes con las pestañas About, Manual y Settings. La comprobación automática de versiones se puede desactivar desde Settings; la preferencia se guarda en el archivo de ajustes del usuario, no en el proyecto.
 - La ventana inicia en 1032 × 576 px, restaura el último tamaño del estado APVTS y mantiene la proporción del lienzo al redimensionar. Los reflejos que ya forman parte de los PNG de Compression, Make Up Gain y Tube giran con sus mandos; el overlay de luces separado y el reflejo del tumbler quedan fijos.
 - Verificación pendiente en un host: orientación visual de los knobs y aguja y respuesta de interacción.
 - El cristal lleva rayaduras y roces sutiles generados con semilla fija por `tools/generate_glass_scratches.js`; se incrustan las versiones 1x y @2x. La copia intacta está en `assets/ui/originales/vu_glass_overlay.png`.

@@ -1,8 +1,35 @@
 #include "PluginEditor.h"
+#include "UpdateChecker.h"
 #include <BinaryData.h>
 
 namespace
 {
+class GearButton final : public juce::Button
+{
+public:
+    GearButton() : Button ("Settings") { setMouseCursor (juce::MouseCursor:: pointingHandCursor); }
+    void paintButton (juce::Graphics& g, bool, bool) override
+    {
+        const auto bounds = getLocalBounds().toFloat().reduced (getWidth() * 0.22f);
+        const auto centre = bounds.getCentre();
+        const auto outer = juce::jmin (bounds.getWidth(), bounds.getHeight()) * 0.48f;
+        const auto inner = outer * 0.68f;
+        juce::Path gear;
+        for (int i = 0; i < 32; ++i)
+        {
+            const auto angle = juce::MathConstants<float>::twoPi * i / 32.0f - juce::MathConstants<float>::halfPi;
+            const auto radius = (i % 4 == 0 || i % 4 == 1) ? outer : inner;
+            const juce::Point<float> p (centre.x + radius * std::cos (angle), centre.y + radius * std::sin (angle));
+            if (i == 0) gear.startNewSubPath (p); else gear.lineTo (p);
+        }
+        gear.closeSubPath();
+        gear.addEllipse (centre.x - outer * 0.31f, centre.y - outer * 0.31f, outer * 0.62f, outer * 0.62f);
+        gear.setUsingNonZeroWinding (false);
+        g.setColour (isOver() ? juce::Colour (0xffd9ae72) : juce::Colour (0xffbe8f5c));
+        g.fillPath (gear);
+    }
+};
+
 juce::Image resourceImage (const char* name)
 {
     int size = 0;
@@ -128,7 +155,33 @@ KomprussrAudioProcessorEditor::KomprussrAudioProcessorEditor (KomprussrAudioProc
     power.setColour (juce::ToggleButton::tickColourId, juce::Colours::transparentBlack);
     power.setColour (juce::ToggleButton::tickDisabledColourId, juce::Colours::transparentBlack);
     addAndMakeVisible (power);
+    settingsButton = std::make_unique<GearButton>();
+    settingsButton->onClick = [this]
+    {
+        if (settingsPanel == nullptr)
+        {
+            settingsPanel = std::make_unique<SettingsPanel> ([this] { if (settingsPanel != nullptr) settingsPanel->setVisible (false); });
+            addAndMakeVisible (*settingsPanel);
+        }
+        settingsPanel->setBounds (getLocalBounds());
+        settingsPanel->setVisible (true);
+        settingsPanel->toFront (true);
+    };
+    addAndMakeVisible (*settingsButton);
     startTimerHz (30);
+    UpdateChecker::checkIfNeeded (this, [safe = juce::Component::SafePointer<KomprussrAudioProcessorEditor> (this)] (const juce::String& version, const juce::String& url)
+    {
+        if (safe != nullptr)
+        {
+            if (safe->settingsPanel == nullptr)
+            {
+                safe->settingsPanel = std::make_unique<SettingsPanel> ([safe] { if (safe != nullptr && safe->settingsPanel != nullptr) safe->settingsPanel->setVisible (false); });
+                safe->addAndMakeVisible (*safe->settingsPanel);
+                safe->settingsPanel->setBounds (safe->getLocalBounds());
+            }
+            safe->settingsPanel->showUpdateNotice (version, url);
+        }
+    });
 }
 
 juce::Rectangle<int> KomprussrAudioProcessorEditor::scaledBounds (int x, int y, int width, int height) const
@@ -198,6 +251,8 @@ void KomprussrAudioProcessorEditor::paint (juce::Graphics& g)
     g.setColour (juce::Colour (0xff7a160f));
     g.fillPath (grStar);
 
+    // The gear is a UI preference control, independent of the power switch.
+
     g.saveState();
     juce::Path circle; circle.addEllipse (683.2f - 258.4f, 468.9f - 258.4f, 516.8f, 516.8f);
     g.reduceClipRegion (circle);
@@ -214,6 +269,9 @@ void KomprussrAudioProcessorEditor::resized()
     makeup.setBounds (scaledBounds (1005, 347, 250, 250));
     tube.setBounds (scaledBounds (806, 517, 120, 120));
     power.setBounds (scaledBounds (1192, 107, 100, 100));
+    settingsButton->setBounds (scaledBounds (1238, 700, 48, 48));
+    if (settingsPanel != nullptr)
+        settingsPanel->setBounds (getLocalBounds());
 
     if (! initialisingSize)
     {

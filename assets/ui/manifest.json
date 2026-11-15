@@ -232,6 +232,20 @@
    "comportamiento": "fija"
   },
   {
+   "id": "settings_gear_vector",
+   "tipo": "vector",
+   "forma": "engranaje de 8 dientes con agujero central",
+   "x": 1238,
+   "y": 700,
+   "width": 48,
+   "height": 48,
+   "centro": [1262, 724],
+   "color": "#BE8F5C",
+   "color_hover": "#D9AE72",
+   "z": 15,
+   "comportamiento": "botón de ajustes, siempre visible"
+  },
+  {
    "id": "vu_needle",
    "file": "capas/vu_needle.png",
    "x": 459,

@@ -42,6 +42,8 @@ juce_add_binary_data(KOMPRUSSR_UI_DATA
 target_sources(KOMPRUSSR PRIVATE
     Source/PluginProcessor.cpp
     Source/PluginEditor.cpp
+    Source/SettingsPanel.cpp
+    Source/UpdateChecker.cpp
 )
 
 target_compile_features(KOMPRUSSR PRIVATE cxx_std_17)

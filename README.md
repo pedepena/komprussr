@@ -31,6 +31,9 @@ Los valores de cada modelo son decisiones creativas iniciales, no mediciones de 
 - El texto GR se conserva en una capa transparente extraída del arte original, centrada en el eje vertical de la aguja y subida 12 px. La estrella se dibuja como forma vectorial roja de 36 px, encima del texto y debajo de la aguja y el cristal.
 - El piloto y el brillo de las válvulas hacen fundidos de 1,5 s al encender y apagar. La rejilla permanece fija. La capa `knob_highlights_overlay` ya queda fija; los reflejos que vienen pintados dentro de los PNG de los knobs todavía giran con ellos y requieren regenerar esas imágenes para desaparecer. La aguja sigue la reducción de ganancia con suavizado de unos 300 ms.
 - Los controles están conectados a los parámetros guardables y automatizables existentes. No se modificó el motor de audio.
+- Un engranaje abre las pestañas **About**, **Manual** y **Settings**. Settings permite activar o desactivar la comprobación automática de nuevas versiones.
+- Por defecto consulta `github.com` para buscar actualizaciones; se puede desactivar en Settings. La preferencia se guarda en los ajustes del usuario, fuera del estado del proyecto.
+- El manual de usuario está disponible en [español](docs/manual_usuario.md).
 - Pendiente: regenerar los PNG de knobs sin reflejos integrados antes de fijar su brillo; abrir el VST3 en un host y revisar visualmente orientación y controles.
 
 ## Pendiente
