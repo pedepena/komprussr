@@ -32,7 +32,7 @@ Los tiempos y coeficientes son puntos de partida creativos. `Reparto lento` es l
 | 6BA6 | 0,50 | 0,55 | 0,55 | 0,45 | 0,22 | 0,15 | 0,012 | -0,15 |
 | 6BC8 | 0,48 | 0,60 | 0,62 | 0,38 | 0,42 | 0,35 | 0,020 | 1,19 |
 | 6K7 | 0,55 | 0,60 | 0,48 | 0,52 | 0,32 | 0,10 | -0,015 | -0,38 |
-| 6SK7 | 1,70 | 0,95 | 0,42 | 0,58 | 0,80 | 0,30 | 0,030 | -0,41 |
+| 6SK7 | 1,45 | 0,85 | 0,42 | 0,58 | 0,70 | 0,30 | 0,030 | 0,00 |
 
 Los trims se aplican progresivamente con la reducción de ganancia, por lo que son cero sin reducción y Compression 0 % permanece transparente en nivel. Se han aproximado con una simulación estática a 1 kHz, -18 dBFS RMS y Compression 70 % para comparar al mismo volumen. La simulación da cerca de -20,8 dBFS RMS para los cinco perfiles (diferencia menor de 0,3 dB). No son mediciones del plugin ni sustituyen su ajuste en un host.
 
@@ -61,10 +61,10 @@ Para seno de 1 kHz a Compression 70 %, la simulación estima estos armónicos re
 
 | Nivel de entrada | Armónico | 6386U | 6BA6 | 6BC8 | 6K7 | 6SK7 |
 |---|---:|---:|---:|---:|---:|---:|
-| -18 dBFS RMS | 2.º | -41 dBc | -39 dBc | -39 dBc | -41 dBc | -30 dBc |
-| -18 dBFS RMS | 3.º | -57 dBc | -48 dBc | -45 dBc | -46 dBc | -39 dBc |
-| -6 dBFS RMS | 2.º | -38 dBc | -38 dBc | -38 dBc | -41 dBc | -30 dBc |
-| -6 dBFS RMS | 3.º | -43 dBc | -42 dBc | -40 dBc | -41 dBc | -36 dBc |
+| -18 dBFS RMS | 2.º | -41 dBc | -39 dBc | -39 dBc | -41 dBc | -32 dBc |
+| -18 dBFS RMS | 3.º | -57 dBc | -48 dBc | -45 dBc | -46 dBc | -41 dBc |
+| -6 dBFS RMS | 2.º | -38 dBc | -38 dBc | -38 dBc | -41 dBc | -32 dBc |
+| -6 dBFS RMS | 3.º | -43 dBc | -42 dBc | -40 dBc | -41 dBc | -38 dBc |
 
 Son cálculos del modelo estático; no incluyen la respuesta completa de JUCE, oversampling ni el host. La compilación Release del VST3 terminó correctamente; la estabilidad en ejecución y la escucha en host aún requieren comprobación.
 
