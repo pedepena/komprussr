@@ -17,7 +17,7 @@ constexpr auto releasesUrl = "https://github.com/pedepena/komprussr/releases";
 constexpr auto releaseDate = "15/11/2026";
 constexpr auto releaseDatePrefix = "Release date: ";
 constexpr auto createdByPrefix = "Created by: ";
-constexpr auto copyrightPrefix = "© 2026 ";
+constexpr auto copyrightPrefix = "\302\251 2026 ";
 constexpr auto checkUpdatesText = "(check updates)";
 constexpr auto sourceCodeText = "Source code";
 constexpr auto licenseText = "Licensed under the GNU AGPL v3";
@@ -26,11 +26,11 @@ constexpr auto juceText = "Made with JUCE (used under the terms of the AGPLv3)."
 constexpr auto vstTrademarkText = "VST is a trademark of Steinberg Media Technologies GmbH, registered in Europe and other countries.";
 constexpr auto warrantyText = "Provided \"as is\", without warranty of any kind.";
 constexpr auto nonAffiliationText = "Independent project, not affiliated with any equipment or vacuum tube manufacturer.";
-constexpr auto manualTitle = "KOMPRUSSR KU-01 — Quick manual";
-constexpr auto manualSections[][2] = {
+constexpr auto manualTitle = "KOMPRUSSR KU-01 \342\200\224 Quick manual";
+constexpr const char* manualSections[][2] = {
     { "What it is", "KOMPRUSSR is a \"vari-mu\" style tube compressor. A compressor turns down the loud parts of a sound so everything feels more even and glued together. KOMPRUSSR also adds a touch of warm tube colour. It is inspired by classic tube designs; it is not an exact copy of any real device." },
-    { "Controls", "COMPRESSION (0–100 %)\nHow much the sound gets squeezed. Near 0 % there is practically no compression. As you turn it up, the loud parts are turned down more and more, and you also hear more tube colour. Start low and raise it until you like what you hear.\n\nMAKE UP GAIN (−12 to +24 dB)\nCompressing makes the overall sound quieter. This knob brings the volume back up. Double-click it to return to 0 dB.\n\nTUBE (5 positions)\nChooses the character of the compressor (see \"The five tubes\" below). You can change it while the music plays, with no volume jumps.\n\nPOWER (switch)\nON: the compressor is working, and the lamp and tubes glow. OFF: the sound passes through untouched.\n\nGR meter\n\"GR\" means Gain Reduction: how much the compressor is turning the sound down right now. With the needle at 0, nothing is happening. The further it moves to the left, the more it is compressing. A few dB of reduction is usually plenty." },
-    { "The five tubes", "Each tube changes how fast the compressor reacts, how firmly it squeezes and what kind of colour it adds. The differences are subtle but real.\n\n6386U — The smoothest and cleanest. Gentle and slow, like glue. Great for full mixes and anything you want to keep natural.\n\n6BA6 — The all-rounder. Balanced body, balanced speed.\n\n6BC8 — Faster and brighter, with a bit more bite. Brings energy to drums and lively sounds.\n\n6K7 — Thicker and rounder, a little darker. Adds weight.\n\n6SK7 — The firmest and most colourful, and the fastest to react. The most obvious effect." },
+    { "Controls", "COMPRESSION (0\342\200\223100 %)\nHow much the sound gets squeezed. Near 0 % there is practically no compression. As you turn it up, the loud parts are turned down more and more, and you also hear more tube colour. Start low and raise it until you like what you hear.\n\nMAKE UP GAIN (\342\210\22212 to +24 dB)\nCompressing makes the overall sound quieter. This knob brings the volume back up. Double-click it to return to 0 dB.\n\nTUBE (5 positions)\nChooses the character of the compressor (see \"The five tubes\" below). You can change it while the music plays, with no volume jumps.\n\nPOWER (switch)\nON: the compressor is working, and the lamp and tubes glow. OFF: the sound passes through untouched.\n\nGR meter\n\"GR\" means Gain Reduction: how much the compressor is turning the sound down right now. With the needle at 0, nothing is happening. The further it moves to the left, the more it is compressing. A few dB of reduction is usually plenty." },
+    { "The five tubes", "Each tube changes how fast the compressor reacts, how firmly it squeezes and what kind of colour it adds. The differences are subtle but real.\n\n6386U \342\200\224 The smoothest and cleanest. Gentle and slow, like glue. Great for full mixes and anything you want to keep natural.\n\n6BA6 \342\200\224 The all-rounder. Balanced body, balanced speed.\n\n6BC8 \342\200\224 Faster and brighter, with a bit more bite. Brings energy to drums and lively sounds.\n\n6K7 \342\200\224 Thicker and rounder, a little darker. Adds weight.\n\n6SK7 \342\200\224 The firmest and most colourful, and the fastest to react. The most obvious effect." },
     { "Tips", "Start with Compression low and watch the GR meter. If the needle barely moves, you are hardly compressing.\n\nAfter compressing, raise Make Up Gain until the volume matches the original sound. Louder usually sounds \"better\", so match the volume before judging.\n\nUse Power to switch between the original and the compressed sound.\n\nTry each tube on the same sound and keep the one that feels right." },
     { "Good to know", "Works in mono and stereo (VST3). All controls can be automated and are saved with your project. The plugin reports a small delay (latency) to your DAW, which compensates for it automatically." }
 };
@@ -38,6 +38,15 @@ const auto gold = juce::Colour (0xffbe8f5c);
 const auto lightGold = juce::Colour (0xffd9ae72);
 const auto panelRed = juce::Colour (0xff7a160f);
 const auto textColour = juce::Colour (0xffe7dfd4);
+
+juce::TextLayout makeTextLayout (const juce::String& text, const juce::Font& font, float maxWidth, juce::Colour colour)
+{
+    juce::AttributedString attributed;
+    attributed.append (text, font, colour);
+    juce::TextLayout layout;
+    layout.createLayout (attributed, maxWidth);
+    return layout;
+}
 
 class PanelLookAndFeel final : public juce::LookAndFeel_V4
 {
@@ -118,7 +127,7 @@ private:
     {
         auto link = std::make_unique<juce::HyperlinkButton> (text, juce::URL (url));
         link->setColour (juce::HyperlinkButton::textColourId, gold);
-        link->setMouseCursor (juce::MouseCursor::pointingHandCursor);
+        link->setMouseCursor (juce::MouseCursor::PointingHandCursor);
         addAndMakeVisible (*link);
         links.emplace_back (row, std::move (link));
     }
@@ -136,16 +145,13 @@ public:
         setSize (width, 1);
         float y = 12.0f * scale;
         const auto widthF = juce::jmax (100.0f, static_cast<float> (getWidth()) - 24.0f * scale);
-        juce::TextLayout title;
-        title.createLayout (manualTitle, juce::Font (juce::jmax (16.0f, 32.0f * scale), juce::Font::bold), widthF);
+        auto title = makeTextLayout (manualTitle, juce::Font (juce::jmax (16.0f, 32.0f * scale), juce::Font::bold), widthF, gold);
         y += title.getHeight() + 15.0f * scale;
         for (const auto& section : manualSections)
         {
-            juce::TextLayout heading;
-            heading.createLayout (section[0], juce::Font (juce::jmax (14.0f, 27.0f * scale), juce::Font::bold), widthF);
+            auto heading = makeTextLayout (section[0], juce::Font (juce::jmax (14.0f, 27.0f * scale), juce::Font::bold), widthF, gold);
             y += heading.getHeight() + 5.0f * scale;
-            juce::TextLayout body;
-            body.createLayout (section[1], juce::Font (juce::jmax (13.0f, 24.0f * scale)), widthF);
+            auto body = makeTextLayout (section[1], juce::Font (juce::jmax (13.0f, 24.0f * scale)), widthF, textColour);
             y += body.getHeight() + 16.0f * scale;
         }
         setSize (width, juce::roundToInt (y));
@@ -154,19 +160,16 @@ public:
     {
         float y = 12.0f * scale;
         const auto width = juce::jmax (100.0f, static_cast<float> (getWidth()) - 24.0f * scale);
-        juce::TextLayout title;
-        title.createLayout (manualTitle, juce::Font (juce::jmax (16.0f, 32.0f * scale), juce::Font::bold), width);
-        g.setColour (gold); title.draw (g, { 12.0f * scale, y, width, title.getHeight() });
+        auto title = makeTextLayout (manualTitle, juce::Font (juce::jmax (16.0f, 32.0f * scale), juce::Font::bold), width, gold);
+        title.draw (g, { 12.0f * scale, y, width, title.getHeight() });
         y += title.getHeight() + 15.0f * scale;
         for (const auto& section : manualSections)
         {
-            juce::TextLayout heading;
-            heading.createLayout (section[0], juce::Font (juce::jmax (14.0f, 27.0f * scale), juce::Font::bold), width);
-            g.setColour (gold); heading.draw (g, { 12.0f * scale, y, width, heading.getHeight() });
+            auto heading = makeTextLayout (section[0], juce::Font (juce::jmax (14.0f, 27.0f * scale), juce::Font::bold), width, gold);
+            heading.draw (g, { 12.0f * scale, y, width, heading.getHeight() });
             y += heading.getHeight() + 5.0f * scale;
-            juce::TextLayout body;
-            body.createLayout (section[1], juce::Font (juce::jmax (13.0f, 24.0f * scale)), width);
-            g.setColour (textColour); body.draw (g, { 12.0f * scale, y, width, body.getHeight() });
+            auto body = makeTextLayout (section[1], juce::Font (juce::jmax (13.0f, 24.0f * scale)), width, textColour);
+            body.draw (g, { 12.0f * scale, y, width, body.getHeight() });
             y += body.getHeight() + 16.0f * scale;
         }
     }
@@ -196,8 +199,10 @@ SettingsPanel::SettingsPanel (std::function<void()> closeFn) : closeRequested (s
     manualContent = std::make_unique<ManualContent>();
     viewport.setScrollBarsShown (true, false);
     viewport.setViewedComponent (aboutContent.get(), false);
-    viewport.setColour (juce::ScrollBar::thumbColourId, gold.withAlpha (0.65f));
-    viewport.setColour (juce::ScrollBar::trackColourId, juce::Colours::transparentBlack);
+    viewport.getVerticalScrollBar().setColour (juce::ScrollBar::thumbColourId, gold.withAlpha (0.75f));
+    viewport.getVerticalScrollBar().setColour (juce::ScrollBar::trackColourId, juce::Colours::transparentBlack);
+    viewport.getHorizontalScrollBar().setColour (juce::ScrollBar::thumbColourId, gold.withAlpha (0.75f));
+    viewport.getHorizontalScrollBar().setColour (juce::ScrollBar::trackColourId, juce::Colours::transparentBlack);
     addAndMakeVisible (viewport);
     automaticChecks.setToggleState (UpdateChecker::automaticChecksEnabled(), juce::dontSendNotification);
     automaticChecks.setColour (juce::ToggleButton::textColourId, textColour);
@@ -255,7 +260,9 @@ void SettingsPanel::resized()
     downloadButton.setBounds (frame.getCentreX() - juce::roundToInt (130.0f * scale), updateMessage.getBottom(), juce::roundToInt (120.0f * scale), juce::roundToInt (44.0f * scale));
     updateCloseButton.setBounds (downloadButton.getRight() + juce::roundToInt (12.0f * scale), downloadButton.getY(), juce::roundToInt (120.0f * scale), downloadButton.getHeight());
     const auto showNormal = ! showingUpdate;
-    for (auto* c : { static_cast<juce::Component*> (&aboutTab), &manualTab, &settingsTab, &closeButton, &viewport }) c->setVisible (showNormal);
+    juce::Component* normalTabComponents[] = { &aboutTab, &manualTab, &settingsTab, &closeButton };
+    for (auto* component : normalTabComponents) component->setVisible (showNormal);
+    viewport.setVisible (showNormal && activeTab != 2);
     automaticChecks.setVisible (showNormal && activeTab == 2);
     privacyNotice.setVisible (showNormal && activeTab == 2);
     updateMessage.setVisible (showingUpdate); downloadButton.setVisible (showingUpdate); updateCloseButton.setVisible (showingUpdate);

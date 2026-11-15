@@ -6,10 +6,10 @@ namespace
 {
 void drawGear (juce::Graphics& g, juce::Rectangle<float> bounds, juce::Colour colour)
 {
-    bounds = bounds.reduced (bounds.getWidth() * 0.12f);
+    bounds = bounds.reduced (2.0f);
     const auto centre = bounds.getCentre();
-    const auto outer = juce::jmin (bounds.getWidth(), bounds.getHeight()) * 0.49f;
-    const auto inner = outer * 0.70f;
+    const auto outer = juce::jmin (bounds.getWidth(), bounds.getHeight()) * 0.48f;
+    const auto inner = outer * 0.72f;
     juce::Path gear;
     for (int i = 0; i < 32; ++i)
     {
@@ -19,16 +19,24 @@ void drawGear (juce::Graphics& g, juce::Rectangle<float> bounds, juce::Colour co
         if (i == 0) gear.startNewSubPath (point); else gear.lineTo (point);
     }
     gear.closeSubPath();
-    gear.addEllipse (centre.x - outer * 0.30f, centre.y - outer * 0.30f, outer * 0.60f, outer * 0.60f);
-    gear.setUsingNonZeroWinding (false);
     g.setColour (colour);
     g.fillPath (gear);
+    const auto holeRadius = outer * 0.28f;
+    g.setColour (juce::Colour (0xff713027));
+    g.fillEllipse (centre.x - holeRadius, centre.y - holeRadius, holeRadius * 2.0f, holeRadius * 2.0f);
+    g.setColour (colour.darker (0.25f));
+    g.drawEllipse (centre.x - holeRadius, centre.y - holeRadius, holeRadius * 2.0f, holeRadius * 2.0f, 1.0f);
 }
 
 class GearButton final : public juce::Button
 {
 public:
-    GearButton() : Button ("Settings") { setMouseCursor (juce::MouseCursor:: pointingHandCursor); }
+    GearButton() : Button ("Settings")
+    {
+        setMouseCursor (juce::MouseCursor::PointingHandCursor);
+        setOpaque (false);
+        setInterceptsMouseClicks (true, true);
+    }
     void paintButton (juce::Graphics& g, bool hovered, bool) override
     {
         drawGear (g, getLocalBounds().toFloat(), hovered ? juce::Colour (0xffd9ae72) : juce::Colour (0xffbe8f5c));
@@ -174,6 +182,9 @@ KomprussrAudioProcessorEditor::KomprussrAudioProcessorEditor (KomprussrAudioProc
     };
     addAndMakeVisible (*settingsButton);
     settingsButton->setBounds (scaledBounds (1238, 700, 48, 48));
+    settingsButton->setVisible (true);
+    settingsButton->setAlpha (1.0f);
+    settingsButton->toFront (false);
     startTimerHz (30);
     UpdateChecker::checkIfNeeded (this, [safe = juce::Component::SafePointer<KomprussrAudioProcessorEditor> (this)] (const juce::String& version, const juce::String& url)
     {
@@ -257,11 +268,6 @@ void KomprussrAudioProcessorEditor::paint (juce::Graphics& g)
     g.setColour (juce::Colour (0xff7a160f));
     g.fillPath (grStar);
 
-    // Draw the gear with the panel artwork; its transparent button handles clicks.
-    drawGear (g, { 1238.0f, 700.0f, 48.0f, 48.0f },
-              settingsButton != nullptr && settingsButton->isMouseOver()
-                  ? juce::Colour (0xffd9ae72) : juce::Colour (0xffbe8f5c));
-
     g.saveState();
     juce::Path circle; circle.addEllipse (683.2f - 258.4f, 468.9f - 258.4f, 516.8f, 516.8f);
     g.reduceClipRegion (circle);
@@ -279,7 +285,13 @@ void KomprussrAudioProcessorEditor::resized()
     tube.setBounds (scaledBounds (806, 517, 120, 120));
     power.setBounds (scaledBounds (1192, 107, 100, 100));
     if (settingsButton != nullptr)
+    {
         settingsButton->setBounds (scaledBounds (1238, 700, 48, 48));
+        settingsButton->setVisible (true);
+        settingsButton->setAlpha (1.0f);
+        if (settingsPanel == nullptr || ! settingsPanel->isVisible())
+            settingsButton->toFront (false);
+    }
     if (settingsPanel != nullptr)
         settingsPanel->setBounds (getLocalBounds());
 
