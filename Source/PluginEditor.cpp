@@ -168,6 +168,7 @@ KomprussrAudioProcessorEditor::KomprussrAudioProcessorEditor (KomprussrAudioProc
         settingsPanel->toFront (true);
     };
     addAndMakeVisible (*settingsButton);
+    settingsButton->setBounds (scaledBounds (1238, 700, 48, 48));
     startTimerHz (30);
     UpdateChecker::checkIfNeeded (this, [safe = juce::Component::SafePointer<KomprussrAudioProcessorEditor> (this)] (const juce::String& version, const juce::String& url)
     {
@@ -269,7 +270,8 @@ void KomprussrAudioProcessorEditor::resized()
     makeup.setBounds (scaledBounds (1005, 347, 250, 250));
     tube.setBounds (scaledBounds (806, 517, 120, 120));
     power.setBounds (scaledBounds (1192, 107, 100, 100));
-    settingsButton->setBounds (scaledBounds (1238, 700, 48, 48));
+    if (settingsButton != nullptr)
+        settingsButton->setBounds (scaledBounds (1238, 700, 48, 48));
     if (settingsPanel != nullptr)
         settingsPanel->setBounds (getLocalBounds());
 
