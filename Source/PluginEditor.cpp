@@ -4,29 +4,34 @@
 
 namespace
 {
+void drawGear (juce::Graphics& g, juce::Rectangle<float> bounds, juce::Colour colour)
+{
+    bounds = bounds.reduced (bounds.getWidth() * 0.12f);
+    const auto centre = bounds.getCentre();
+    const auto outer = juce::jmin (bounds.getWidth(), bounds.getHeight()) * 0.49f;
+    const auto inner = outer * 0.70f;
+    juce::Path gear;
+    for (int i = 0; i < 32; ++i)
+    {
+        const auto angle = juce::MathConstants<float>::twoPi * i / 32.0f - juce::MathConstants<float>::halfPi;
+        const auto radius = (i % 4 == 0 || i % 4 == 1) ? outer : inner;
+        const juce::Point<float> point (centre.x + radius * std::cos (angle), centre.y + radius * std::sin (angle));
+        if (i == 0) gear.startNewSubPath (point); else gear.lineTo (point);
+    }
+    gear.closeSubPath();
+    gear.addEllipse (centre.x - outer * 0.30f, centre.y - outer * 0.30f, outer * 0.60f, outer * 0.60f);
+    gear.setUsingNonZeroWinding (false);
+    g.setColour (colour);
+    g.fillPath (gear);
+}
+
 class GearButton final : public juce::Button
 {
 public:
     GearButton() : Button ("Settings") { setMouseCursor (juce::MouseCursor:: pointingHandCursor); }
-    void paintButton (juce::Graphics& g, bool, bool) override
+    void paintButton (juce::Graphics& g, bool hovered, bool) override
     {
-        const auto bounds = getLocalBounds().toFloat().reduced (getWidth() * 0.22f);
-        const auto centre = bounds.getCentre();
-        const auto outer = juce::jmin (bounds.getWidth(), bounds.getHeight()) * 0.48f;
-        const auto inner = outer * 0.68f;
-        juce::Path gear;
-        for (int i = 0; i < 32; ++i)
-        {
-            const auto angle = juce::MathConstants<float>::twoPi * i / 32.0f - juce::MathConstants<float>::halfPi;
-            const auto radius = (i % 4 == 0 || i % 4 == 1) ? outer : inner;
-            const juce::Point<float> p (centre.x + radius * std::cos (angle), centre.y + radius * std::sin (angle));
-            if (i == 0) gear.startNewSubPath (p); else gear.lineTo (p);
-        }
-        gear.closeSubPath();
-        gear.addEllipse (centre.x - outer * 0.31f, centre.y - outer * 0.31f, outer * 0.62f, outer * 0.62f);
-        gear.setUsingNonZeroWinding (false);
-        g.setColour (isOver() ? juce::Colour (0xffd9ae72) : juce::Colour (0xffbe8f5c));
-        g.fillPath (gear);
+        drawGear (g, getLocalBounds().toFloat(), hovered ? juce::Colour (0xffd9ae72) : juce::Colour (0xffbe8f5c));
     }
 };
 
@@ -252,7 +257,10 @@ void KomprussrAudioProcessorEditor::paint (juce::Graphics& g)
     g.setColour (juce::Colour (0xff7a160f));
     g.fillPath (grStar);
 
-    // The gear is a UI preference control, independent of the power switch.
+    // Draw the gear with the panel artwork; its transparent button handles clicks.
+    drawGear (g, { 1238.0f, 700.0f, 48.0f, 48.0f },
+              settingsButton != nullptr && settingsButton->isMouseOver()
+                  ? juce::Colour (0xffd9ae72) : juce::Colour (0xffbe8f5c));
 
     g.saveState();
     juce::Path circle; circle.addEllipse (683.2f - 258.4f, 468.9f - 258.4f, 516.8f, 516.8f);
