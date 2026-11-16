@@ -1,6 +1,7 @@
 #include "PluginEditor.h"
 #include "UpdateChecker.h"
 #include <BinaryData.h>
+#include <array>
 
 namespace
 {
@@ -52,6 +53,33 @@ juce::Image resourceImage (const char* name)
     return {};
 }
 
+juce::Image makeKnobImage (const char* name)
+{
+    auto image = resourceImage (name);
+    if (! image.isValid()) return image;
+
+    // Lift the dark midtones slightly while preserving the worn texture and highlights.
+    static const auto brighter = []
+    {
+        std::array<juce::uint8, 256> values {};
+        for (size_t i = 0; i < values.size(); ++i)
+            values[i] = static_cast<juce::uint8> (juce::roundToInt (255.0 * std::pow (i / 255.0, 0.92)));
+        return values;
+    }();
+
+    juce::Image::BitmapData pixels (image, juce::Image::BitmapData::readWrite);
+    for (int y = 0; y < pixels.height; ++y)
+        for (int x = 0; x < pixels.width; ++x)
+        {
+            const auto colour = pixels.getPixelColour (x, y);
+            if (colour.getAlpha() > 0)
+                pixels.setPixelColour (x, y, juce::Colour::fromRGBA (brighter[colour.getRed()],
+                    brighter[colour.getGreen()], brighter[colour.getBlue()], colour.getAlpha()));
+        }
+
+    return image;
+}
+
 void drawLayer (juce::Graphics& g, const juce::Image& image, float x, float y, float w, float h)
 {
     if (image.isValid())
@@ -101,8 +129,8 @@ KomprussrAudioProcessorEditor::KomprussrAudioProcessorEditor (KomprussrAudioProc
       panel (resourceImage ("panel_base_off_png")), scales (resourceImage ("scales_labels_png")),
       tubeGlow (makeValveGlowLayer (resourceImage ("tubes_on_png"))), lamp (resourceImage ("lamp_on_png")),
       shadows (resourceImage ("knob_shadows_png")),
-      compressionImage (resourceImage ("knob_compression2x_png")),
-      makeupImage (resourceImage ("knob_makeup2x_png")), tubeImage (resourceImage ("knob_tube2x_png")),
+      compressionImage (makeKnobImage ("knob_compression2x_png")),
+      makeupImage (makeKnobImage ("knob_makeup2x_png")), tubeImage (makeKnobImage ("knob_tube2x_png")),
       highlights (resourceImage ("knob_highlights_overlay_png")),
       tumblerOn (resourceImage ("tumbler_on2x_png")), tumblerOff (resourceImage ("tumbler_off2x_png")),
       needle (resourceImage ("vu_needle2x_png")), glass (resourceImage ("vu_glass_overlay2x_png")),
