@@ -22,7 +22,10 @@ private:
     juce::AudioProcessorValueTreeState::ButtonAttachment powerAttachment;
     std::unique_ptr<juce::Button> settingsButton;
     std::unique_ptr<SettingsPanel> settingsPanel;
-    juce::Image panel, scales, tubeGlow, lamp, shadows, compressionImage, makeupImage, tubeImage;
+    juce::Image panel, scales, tubeGlow, lamp, shadows;
+    juce::Image compressionImage, makeupImage, tubeImage;
+    juce::Image compressionShadow, makeupShadow, tubeShadow;
+    juce::Image compressionLight, makeupLight, tubeLight;
     juce::Image highlights, tumblerOn, tumblerOff, needle, glass, grLabel;
     float lampOpacity = 0.0f, needleDb = 0.0f;
     double lastTickMs = 0.0;

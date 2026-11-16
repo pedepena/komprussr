@@ -26,11 +26,17 @@ juce_add_binary_data(KOMPRUSSR_UI_DATA
         assets/ui/capas/scales_labels.png
         assets/ui/capas/tubes_on.png
         assets/ui/capas/lamp_on.png
-        assets/ui/capas/knob_shadows.png
-        assets/ui/capas/knob_compression@2x.png
-        assets/ui/capas/knob_makeup@2x.png
-        assets/ui/capas/knob_tube@2x.png
-        assets/ui/capas/knob_highlights_overlay.png
+        assets/ui/capas/knob_shadows_sin_knobs.png
+        assets/ui/capas/knob_compression_vintage@2x.png
+        assets/ui/capas/knob_makeup_ivory@2x.png
+        assets/ui/capas/knob_tube_worn@2x.png
+        assets/ui/capas/knob_compression_shadow@2x.png
+        assets/ui/capas/knob_makeup_shadow@2x.png
+        assets/ui/capas/knob_tube_shadow@2x.png
+        assets/ui/capas/knob_compression_light@2x.png
+        assets/ui/capas/knob_makeup_light@2x.png
+        assets/ui/capas/knob_tube_light@2x.png
+        assets/ui/capas/knob_highlights_overlay_sin_knobs.png
         assets/ui/capas/gr_label.png
         assets/ui/capas/tumbler_on@2x.png
         assets/ui/capas/tumbler_off@2x.png

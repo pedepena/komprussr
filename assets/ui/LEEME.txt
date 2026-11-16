@@ -7,11 +7,13 @@ QUE ES CADA COSA
 - manifest.json ........ posiciones, tamanos, pivotes, rangos de giro, orden de apilado, estados y calibracion de la aguja.
 - capas/ ............... todas las capas. Las piezas que giran o cambian traen tambien version @2x (doble resolucion).
 - previews/ ............ como queda montado: ON, OFF y ON con otros valores.
+- tools/generate_knob_layers.py genera los knobs escalados, luces y sombras fijas y las vistas previas de giro.
 - KOMPRUSSR_KU-01_especificacion_UI.pdf ... especificacion completa del diseno.
 
 ORDEN DE DIBUJO (de abajo arriba)
-1 panel_base  2 scales_labels  3 tubes_on  4 lamp_on  5 knob_shadows  6 knob_compression  7 knob_makeup
-8 knob_tube  9 knob_highlights_overlay  10 tumbler_on / tumbler_off  11 vu_needle  12 vu_glass_overlay
+1 panel_base  2 scales_labels  3 tubes_on  4 lamp_on  5 knob_shadows  6 sombras fijas locales  7 knob_compression
+8 luz fija Compression  9 knob_makeup  10 luz fija Make Up Gain  11 knob_tube  12 luz fija Tube
+13 knob_highlights_overlay (reflejo del tumbler)  14 tumbler_on / tumbler_off  15 vu_needle  16 vu_glass_overlay
 
 ESTADOS
 - ON : tumbler_on visible; tubes_on y lamp_on a opacidad 1 (fundido suave); aguja libre segun GR.
@@ -22,6 +24,8 @@ GIROS
 - knob_makeup: valor -12..+24 dB (0 dB por defecto = -45 grados)  ->  -135..+135 grados.
 - knob_tube: 5 posiciones (6386U, 6BA6, 6BC8, 6K7, 6SK7) en -120, -60, 0, +60, +120 grados.
 - Los knobs y la aguja giran alrededor del CENTRO de su imagen. Las luces (knob_highlights_overlay) y las sombras (knob_shadows) NO giran.
+- Knobs nuevos mate: Compression = knob_a_vintage, Make Up Gain = knob_c_marfil y Tube = knob_b_desgastado. Las luces y sombras locales PNG son fijas; las variantes *_sin_knobs conservan el efecto del tumbler y evitan duplicar los efectos antiguos de los knobs.
+- previews/knob_angles/ muestra cada knob en -135°, 0° y +135°; Make Up Gain incluye también 0 dB a -45°.
 - vu_needle: grados segun la tabla de calibracion del manifest (interpolacion lineal). Dibujarla recortada al circulo
   centro (683.2, 468.9), radio 258.4, y a la ventana (458,165,463x211), para que la punta no pase del arco.
 

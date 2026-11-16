@@ -128,10 +128,14 @@ KomprussrAudioProcessorEditor::KomprussrAudioProcessorEditor (KomprussrAudioProc
       powerAttachment (p.parameters, "power", power),
       panel (resourceImage ("panel_base_off_png")), scales (resourceImage ("scales_labels_png")),
       tubeGlow (makeValveGlowLayer (resourceImage ("tubes_on_png"))), lamp (resourceImage ("lamp_on_png")),
-      shadows (resourceImage ("knob_shadows_png")),
-      compressionImage (makeKnobImage ("knob_compression2x_png")),
-      makeupImage (makeKnobImage ("knob_makeup2x_png")), tubeImage (makeKnobImage ("knob_tube2x_png")),
-      highlights (resourceImage ("knob_highlights_overlay_png")),
+      shadows (resourceImage ("knob_shadows_sin_knobs_png")),
+      compressionImage (makeKnobImage ("knob_compression_vintage2x_png")),
+      makeupImage (makeKnobImage ("knob_makeup_ivory2x_png")), tubeImage (makeKnobImage ("knob_tube_worn2x_png")),
+      compressionShadow (resourceImage ("knob_compression_shadow2x_png")),
+      makeupShadow (resourceImage ("knob_makeup_shadow2x_png")), tubeShadow (resourceImage ("knob_tube_shadow2x_png")),
+      compressionLight (resourceImage ("knob_compression_light2x_png")),
+      makeupLight (resourceImage ("knob_makeup_light2x_png")), tubeLight (resourceImage ("knob_tube_light2x_png")),
+      highlights (resourceImage ("knob_highlights_overlay_sin_knobs_png")),
       tumblerOn (resourceImage ("tumbler_on2x_png")), tumblerOff (resourceImage ("tumbler_off2x_png")),
       needle (resourceImage ("vu_needle2x_png")), glass (resourceImage ("vu_glass_overlay2x_png")),
       grLabel (resourceImage ("gr_label_png"))
@@ -267,14 +271,20 @@ void KomprussrAudioProcessorEditor::paint (juce::Graphics& g)
     g.setOpacity (lampOpacity); drawLayer (g, tubeGlow, 460, 472, 283, 193); drawLayer (g, lamp, 1076, 53, 92, 92);
     g.setOpacity (1.0f);
     drawLayer (g, shadows, 0, 0, 1376, 768);
+    drawLayer (g, compressionShadow, 121, 347, 250, 250);
+    drawLayer (g, makeupShadow, 1005, 347, 250, 250);
+    drawLayer (g, tubeShadow, 806, 517, 120, 120);
 
     const auto compressionAngle = -135.0f + 270.0f * static_cast<float> (compression.getValue() / 100.0);
     const auto makeupAngle = -135.0f + 270.0f * static_cast<float> ((makeup.getValue() + 12.0) / 36.0);
     static constexpr float tubeAngles[] = { -120.0f, -60.0f, 0.0f, 60.0f, 120.0f };
     const auto tubeIndex = juce::jlimit (0, 4, juce::roundToInt (static_cast<float> (tube.getValue())));
     drawRotatedLayer (g, compressionImage, 121, 347, 250, 250, 246, 472, compressionAngle);
+    drawLayer (g, compressionLight, 121, 347, 250, 250);
     drawRotatedLayer (g, makeupImage, 1005, 347, 250, 250, 1130, 472, makeupAngle);
+    drawLayer (g, makeupLight, 1005, 347, 250, 250);
     drawRotatedLayer (g, tubeImage, 806, 517, 120, 120, 866, 577, tubeAngles[tubeIndex]);
+    drawLayer (g, tubeLight, 806, 517, 120, 120);
     drawLayer (g, highlights, 0, 0, 1376, 768);
     const auto isOn = power.getToggleState();
     drawLayer (g, isOn ? tumblerOn : tumblerOff, 1192, 107, 100, 100);

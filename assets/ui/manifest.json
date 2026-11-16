@@ -67,18 +67,54 @@
   },
   {
    "id": "knob_shadows",
-   "file": "capas/knob_shadows.png",
+   "file": "capas/knob_shadows_sin_knobs.png",
    "x": 0,
    "y": 0,
    "width": 1376,
    "height": 768,
    "z": 5,
    "comportamiento": "fija",
-   "nota": "sombras proyectadas bajo knobs y tumbler; no giran"
+   "nota": "sombras globales del tumbler; las de los knobs están en capas fijas separadas"
+  },
+  {
+   "id": "knob_compression_shadow_fixed",
+   "file": "capas/knob_compression_shadow.png",
+   "x": 121,
+   "y": 347,
+   "width": 250,
+   "height": 250,
+   "z": 5.1,
+   "comportamiento": "fija",
+   "nota": "Sombra proyectada suave, fija; no gira con el knob.",
+   "archivo_2x": "capas/knob_compression_shadow@2x.png"
+  },
+  {
+   "id": "knob_makeup_shadow_fixed",
+   "file": "capas/knob_makeup_shadow.png",
+   "x": 1005,
+   "y": 347,
+   "width": 250,
+   "height": 250,
+   "z": 5.2,
+   "comportamiento": "fija",
+   "nota": "Sombra proyectada suave, fija; no gira con el knob.",
+   "archivo_2x": "capas/knob_makeup_shadow@2x.png"
+  },
+  {
+   "id": "knob_tube_shadow_fixed",
+   "file": "capas/knob_tube_shadow.png",
+   "x": 806,
+   "y": 517,
+   "width": 120,
+   "height": 120,
+   "z": 5.3,
+   "comportamiento": "fija",
+   "nota": "Sombra proyectada suave, fija; no gira con el knob.",
+   "archivo_2x": "capas/knob_tube_shadow@2x.png"
   },
   {
    "id": "knob_compression",
-   "file": "capas/knob_compression.png",
+   "file": "capas/knob_compression_vintage.png",
    "x": 121,
    "y": 347,
    "width": 250,
@@ -99,11 +135,24 @@
     246,
     472
    ],
-   "archivo_2x": "capas/knob_compression@2x.png"
+   "archivo_2x": "capas/knob_compression_vintage@2x.png",
+   "nota": "Imagen mate sin luz ni sombra horneadas; gira alrededor del centro de la imagen."
+  },
+  {
+   "id": "knob_compression_light_fixed",
+   "file": "capas/knob_compression_light.png",
+   "x": 121,
+   "y": 347,
+   "width": 250,
+   "height": 250,
+   "z": 6.1,
+   "comportamiento": "fija",
+   "nota": "Luz suave superior izquierda y oscurecimiento radial, fija; no gira con el knob.",
+   "archivo_2x": "capas/knob_compression_light@2x.png"
   },
   {
    "id": "knob_makeup",
-   "file": "capas/knob_makeup.png",
+   "file": "capas/knob_makeup_ivory.png",
    "x": 1005,
    "y": 347,
    "width": 250,
@@ -126,11 +175,24 @@
     1130,
     472
    ],
-   "archivo_2x": "capas/knob_makeup@2x.png"
+   "archivo_2x": "capas/knob_makeup_ivory@2x.png",
+   "nota": "Imagen mate sin luz ni sombra horneadas; gira alrededor del centro de la imagen."
+  },
+  {
+   "id": "knob_makeup_light_fixed",
+   "file": "capas/knob_makeup_light.png",
+   "x": 1005,
+   "y": 347,
+   "width": 250,
+   "height": 250,
+   "z": 7.1,
+   "comportamiento": "fija",
+   "nota": "Luz suave superior izquierda y oscurecimiento radial, fija; no gira con el knob.",
+   "archivo_2x": "capas/knob_makeup_light@2x.png"
   },
   {
    "id": "knob_tube",
-   "file": "capas/knob_tube.png",
+   "file": "capas/knob_tube_worn.png",
    "x": 806,
    "y": 517,
    "width": 120,
@@ -160,18 +222,31 @@
     866,
     577
    ],
-   "archivo_2x": "capas/knob_tube@2x.png"
+   "archivo_2x": "capas/knob_tube_worn@2x.png",
+   "nota": "Imagen mate sin luz ni sombra horneadas; gira alrededor del centro de la imagen."
+  },
+  {
+   "id": "knob_tube_light_fixed",
+   "file": "capas/knob_tube_light.png",
+   "x": 806,
+   "y": 517,
+   "width": 120,
+   "height": 120,
+   "z": 8.1,
+   "comportamiento": "fija",
+   "nota": "Luz suave superior izquierda y oscurecimiento radial, fija; no gira con el knob.",
+   "archivo_2x": "capas/knob_tube_light@2x.png"
   },
   {
    "id": "knob_highlights_overlay",
-   "file": "capas/knob_highlights_overlay.png",
+   "file": "capas/knob_highlights_overlay_sin_knobs.png",
    "x": 0,
    "y": 0,
    "width": 1376,
    "height": 768,
    "z": 9,
    "comportamiento": "fija",
-   "nota": "luces sobre knobs y tumbler; NO giran"
+   "nota": "reflejo fijo del tumbler; los knobs tienen capas de luz separadas"
   },
   {
    "id": "tumbler_on",
