@@ -19,12 +19,10 @@ private:
     void close();
     void openLink (const juce::String& url);
     std::function<void()> closeRequested;
-    juce::TextButton aboutTab { "About" }, manualTab { "Manual" }, settingsTab { "Settings" }, closeButton { "X" };
+    juce::TextButton aboutTab { "About" }, manualTab { "Manual" }, closeButton { "X" };
     juce::Viewport viewport;
     std::unique_ptr<AboutContent> aboutContent;
     std::unique_ptr<ManualContent> manualContent;
-    juce::ToggleButton automaticChecks { "Check for updates automatically" };
-    juce::Label privacyNotice;
     juce::Label updateMessage;
     juce::TextButton downloadButton { "Download" }, updateCloseButton { "Close" };
     int activeTab = 0;

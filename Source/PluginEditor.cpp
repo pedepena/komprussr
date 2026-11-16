@@ -31,7 +31,7 @@ void drawGear (juce::Graphics& g, juce::Rectangle<float> bounds, juce::Colour co
 class GearButton final : public juce::Button
 {
 public:
-    GearButton() : Button ("Settings")
+    GearButton() : Button ("About and updates")
     {
         setMouseCursor (juce::MouseCursor::PointingHandCursor);
         setOpaque (false);

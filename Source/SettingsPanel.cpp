@@ -26,6 +26,8 @@ constexpr auto juceText = "Made with JUCE (used under the terms of the AGPLv3)."
 constexpr auto vstTrademarkText = "VST is a trademark of Steinberg Media Technologies GmbH, registered in Europe and other countries.";
 constexpr auto warrantyText = "Provided \"as is\", without warranty of any kind.";
 constexpr auto nonAffiliationText = "Independent project, not affiliated with any equipment or vacuum tube manufacturer.";
+constexpr auto updatePreferenceText = "Check for updates automatically";
+constexpr auto updatePrivacyText = "When enabled, KOMPRUSSR contacts github.com to look for a newer version (GitHub sees your IP address).";
 constexpr auto manualTitle = "KOMPRUSSR KU-01 \342\200\224 Quick manual";
 constexpr const char* manualSections[][2] = {
     { "What it is", "KOMPRUSSR is a \"vari-mu\" style tube compressor. A compressor turns down the loud parts of a sound so everything feels more even and glued together. KOMPRUSSR also adds a touch of warm tube colour. It is inspired by classic tube designs; it is not an exact copy of any real device." },
@@ -39,10 +41,10 @@ const auto lightGold = juce::Colour (0xffd9ae72);
 const auto panelRed = juce::Colour (0xff7a160f);
 const auto textColour = juce::Colour (0xffe7dfd4);
 
-juce::TextLayout makeTextLayout (const juce::String& text, const juce::Font& font, float maxWidth, juce::Colour colour)
+juce::TextLayout makeTextLayout (const char* utf8Text, const juce::Font& font, float maxWidth, juce::Colour colour)
 {
     juce::AttributedString attributed;
-    attributed.append (text, font, colour);
+    attributed.append (juce::String::fromUTF8 (utf8Text), font, colour);
     juce::TextLayout layout;
     layout.createLayout (attributed, maxWidth);
     return layout;
@@ -81,13 +83,19 @@ public:
         addText (juce::String (createdByPrefix) + creatorName, 3);
         addLink (instagramText, instagramUrl, 4);
         addLink (emailText, emailUrl, 5);
-        addText (juce::String (copyrightPrefix) + creatorName, 6);
+        addText (juce::String::fromUTF8 (copyrightPrefix) + creatorName, 6);
         addText (licenseText, 7);
         addLink (sourceCodeText, repositoryUrl, 8);
         addText (juceText, 9);
         addText (vstTrademarkText, 10);
         addText (warrantyText, 11);
         addText (nonAffiliationText, 12);
+        automaticChecks.setToggleState (UpdateChecker::automaticChecksEnabled(), juce::dontSendNotification);
+        automaticChecks.setColour (juce::ToggleButton::textColourId, textColour);
+        automaticChecks.setColour (juce::ToggleButton::tickColourId, gold);
+        automaticChecks.setButtonText (updatePreferenceText);
+        automaticChecks.onClick = [this] { UpdateChecker::setAutomaticChecksEnabled (automaticChecks.getToggleState()); };
+        addAndMakeVisible (automaticChecks);
         setSize (700, 660);
     }
     void setScale (float s, int width) { scale = s; setSize (width, getHeight()); resized(); }
@@ -110,7 +118,21 @@ public:
             link.second->setBounds (0, rowIndex * row, getWidth(), row);
             link.second->setFont (juce::Font (juce::jmax (13.0f, 17.0f * scale)), false);
         }
-        setSize (getWidth(), 13 * row + juce::roundToInt (108.0f * scale));
+        const auto preferenceY = 13 * row + juce::roundToInt (108.0f * scale);
+        automaticChecks.setBounds (0, preferenceY, getWidth(), juce::roundToInt (42.0f * scale));
+        const auto textY = automaticChecks.getBottom() + juce::roundToInt (4.0f * scale);
+        auto noticeLayout = makeTextLayout (updatePrivacyText, juce::Font (juce::jmax (13.0f, 16.0f * scale)),
+                                            juce::jmax (100.0f, static_cast<float> (getWidth()) - 8.0f * scale), textColour.withAlpha (0.85f));
+        privacyTextY = static_cast<float> (textY);
+        privacyTextHeight = noticeLayout.getHeight();
+        setSize (getWidth(), textY + juce::roundToInt (privacyTextHeight + 12.0f * scale));
+    }
+    void paint (juce::Graphics& g) override
+    {
+        const auto width = juce::jmax (100.0f, static_cast<float> (getWidth()) - 8.0f * scale);
+        auto noticeLayout = makeTextLayout (updatePrivacyText, juce::Font (juce::jmax (13.0f, 16.0f * scale)), width,
+                                            textColour.withAlpha (0.85f));
+        noticeLayout.draw (g, { 0.0f, privacyTextY, width, privacyTextHeight });
     }
 private:
     void addText (const juce::String& value, int row, bool heading = false)
@@ -132,6 +154,8 @@ private:
         links.emplace_back (row, std::move (link));
     }
     float scale = 1.0f;
+    float privacyTextY = 0.0f, privacyTextHeight = 0.0f;
+    juce::ToggleButton automaticChecks { updatePreferenceText };
     std::vector<std::pair<int, std::unique_ptr<juce::Label>>> labels;
     std::vector<std::pair<int, std::unique_ptr<juce::HyperlinkButton>>> links;
 };
@@ -180,7 +204,7 @@ private:
 SettingsPanel::SettingsPanel (std::function<void()> closeFn) : closeRequested (std::move (closeFn))
 {
     setInterceptsMouseClicks (true, true);
-    for (auto* button : { &aboutTab, &manualTab, &settingsTab, &closeButton, &downloadButton, &updateCloseButton })
+    for (auto* button : { &aboutTab, &manualTab, &closeButton, &downloadButton, &updateCloseButton })
     {
         button->setColour (juce::TextButton::buttonColourId, juce::Colour (0xff281d18));
         button->setColour (juce::TextButton::buttonOnColourId, panelRed);
@@ -191,7 +215,6 @@ SettingsPanel::SettingsPanel (std::function<void()> closeFn) : closeRequested (s
     }
     aboutTab.onClick = [this] { selectTab (0); };
     manualTab.onClick = [this] { selectTab (1); };
-    settingsTab.onClick = [this] { selectTab (2); };
     closeButton.onClick = [this] { close(); };
     downloadButton.onClick = [this] { openLink (pendingUrl); };
     updateCloseButton.onClick = [this] { showingUpdate = false; close(); };
@@ -204,15 +227,6 @@ SettingsPanel::SettingsPanel (std::function<void()> closeFn) : closeRequested (s
     viewport.getHorizontalScrollBar().setColour (juce::ScrollBar::thumbColourId, gold.withAlpha (0.75f));
     viewport.getHorizontalScrollBar().setColour (juce::ScrollBar::trackColourId, juce::Colours::transparentBlack);
     addAndMakeVisible (viewport);
-    automaticChecks.setToggleState (UpdateChecker::automaticChecksEnabled(), juce::dontSendNotification);
-    automaticChecks.setColour (juce::ToggleButton::textColourId, textColour);
-    automaticChecks.setColour (juce::ToggleButton::tickColourId, gold);
-    automaticChecks.onClick = [this] { UpdateChecker::setAutomaticChecksEnabled (automaticChecks.getToggleState()); };
-    addAndMakeVisible (automaticChecks);
-    privacyNotice.setText ("When enabled, KOMPRUSSR contacts github.com to look for a newer version (GitHub sees your IP address).", juce::dontSendNotification);
-    privacyNotice.setColour (juce::Label::textColourId, textColour.withAlpha (0.8f));
-    privacyNotice.setFont (juce::Font (15.0f));
-    addAndMakeVisible (privacyNotice);
     updateMessage.setJustificationType (juce::Justification::centred);
     updateMessage.setColour (juce::Label::textColourId, textColour);
     addAndMakeVisible (updateMessage);
@@ -221,7 +235,7 @@ SettingsPanel::SettingsPanel (std::function<void()> closeFn) : closeRequested (s
 
 SettingsPanel::~SettingsPanel()
 {
-    for (auto* button : { &aboutTab, &manualTab, &settingsTab, &closeButton, &downloadButton, &updateCloseButton })
+    for (auto* button : { &aboutTab, &manualTab, &closeButton, &downloadButton, &updateCloseButton })
         button->setLookAndFeel (nullptr);
     viewport.setViewedComponent (nullptr, false);
 }
@@ -250,21 +264,16 @@ void SettingsPanel::resized()
     const auto tabWidth = juce::roundToInt (150.0f * scale);
     aboutTab.setBounds (frame.getX() + pad, frame.getY() + pad, tabWidth, headerHeight);
     manualTab.setBounds (aboutTab.getRight() + juce::roundToInt (8.0f * scale), frame.getY() + pad, tabWidth, headerHeight);
-    settingsTab.setBounds (manualTab.getRight() + juce::roundToInt (8.0f * scale), frame.getY() + pad, tabWidth, headerHeight);
     viewport.setBounds (frame.getX() + pad, aboutTab.getBottom() + pad / 2, frame.getWidth() - 2 * pad, frame.getHeight() - headerHeight - 2 * pad);
     aboutContent->setScale (scale, viewport.getWidth() - juce::roundToInt (16.0f * scale));
     manualContent->setScale (scale, viewport.getWidth() - juce::roundToInt (20.0f * scale));
-    automaticChecks.setBounds (viewport.getX() + pad, viewport.getY() + pad, viewport.getWidth() - 2 * pad, juce::roundToInt (42.0f * scale));
-    privacyNotice.setBounds (automaticChecks.getX(), automaticChecks.getBottom() + pad / 2, automaticChecks.getWidth(), juce::roundToInt (68.0f * scale));
     updateMessage.setBounds (frame.getX() + pad * 2, frame.getCentreY() - pad * 2, frame.getWidth() - 4 * pad, juce::roundToInt (65.0f * scale));
     downloadButton.setBounds (frame.getCentreX() - juce::roundToInt (130.0f * scale), updateMessage.getBottom(), juce::roundToInt (120.0f * scale), juce::roundToInt (44.0f * scale));
     updateCloseButton.setBounds (downloadButton.getRight() + juce::roundToInt (12.0f * scale), downloadButton.getY(), juce::roundToInt (120.0f * scale), downloadButton.getHeight());
     const auto showNormal = ! showingUpdate;
-    juce::Component* normalTabComponents[] = { &aboutTab, &manualTab, &settingsTab, &closeButton };
+    juce::Component* normalTabComponents[] = { &aboutTab, &manualTab, &closeButton };
     for (auto* component : normalTabComponents) component->setVisible (showNormal);
-    viewport.setVisible (showNormal && activeTab != 2);
-    automaticChecks.setVisible (showNormal && activeTab == 2);
-    privacyNotice.setVisible (showNormal && activeTab == 2);
+    viewport.setVisible (showNormal);
     updateMessage.setVisible (showingUpdate); downloadButton.setVisible (showingUpdate); updateCloseButton.setVisible (showingUpdate);
 }
 
@@ -273,10 +282,8 @@ void SettingsPanel::selectTab (int tab)
     activeTab = tab;
     aboutTab.setToggleState (tab == 0, juce::dontSendNotification);
     manualTab.setToggleState (tab == 1, juce::dontSendNotification);
-    settingsTab.setToggleState (tab == 2, juce::dontSendNotification);
     viewport.setViewedComponent (tab == 1 ? static_cast<juce::Component*> (manualContent.get()) : aboutContent.get(), false);
-    viewport.setVisible (tab != 2);
-    automaticChecks.setVisible (tab == 2); privacyNotice.setVisible (tab == 2);
+    viewport.setVisible (! showingUpdate);
     resized(); repaint();
 }
 
