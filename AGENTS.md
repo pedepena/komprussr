@@ -7,6 +7,7 @@ Plugin de audio VST3/AU en C++ con JUCE: compresor valvular tipo Vari-Mu. Proyec
 - Código de audio seguro para tiempo real: sin asignaciones de memoria, bloqueos ni operaciones pesadas en el hilo de audio.
 - Sin controles extra de sonido ni función A/B en esta fase. El engranaje, las pestañas About/Manual y la casilla de comprobación de actualizaciones dentro de About son solo elementos de interfaz: no son controles de sonido ni parámetros, no se automatizan ni se guardan en el estado del proyecto. La preferencia y la fecha de consulta viven en un archivo de ajustes del usuario. La comprobación automática de versiones es la única conexión automática a internet.
 - No afirmes que hay emulación física exacta de ningún equipo: son modelos inspirados en las válvulas.
+- No añadas etapas de señal nuevas, topologías ni combinaciones de válvulas. Los filtros y las curvas internas de cada perfil de válvula (ValveModel) sí están permitidos, siempre que no añadan controles ni cambien la interfaz.
 - Todo se hace por fases: (1) interfaz y parámetros con el audio sin procesar, (2) motor de audio.
 
 ## Parámetros (AudioProcessorValueTreeState, automatizables y guardados en el estado)

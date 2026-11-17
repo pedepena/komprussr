@@ -39,6 +39,8 @@ private:
         float fastReleaseMs, slowReleaseMs, slowReleaseMix, harmonicDrive;
         float evenHarmonic, oddHarmonic, makeupTrimDb, toneCutoffHz, maximumDrive;
         float curveHardness, transientGrain, asymmetry;
+        float referenceGain, splitHz;
+        int splitMode;
     };
     static const ValveModel& modelFor (int index) noexcept;
 
@@ -52,6 +54,6 @@ private:
     int modelFadeSamples = 0;
     static constexpr int modelFadeLength = 512;
     float reductionGainTable[6001] {};
-    float dcInput[5][2] {}, dcOutput[5][2] {}, toneState[5][2] {}, transientEnvelope[5][2] {};
+    float dcInput[5][2] {}, dcOutput[5][2] {}, toneState[5][2] {}, splitLowState[5][2] {}, transientEnvelope[5][2] {};
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (KomprussrAudioProcessor)
 };
