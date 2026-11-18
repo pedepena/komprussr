@@ -1,0 +1,16 @@
+KOMPRUSSR KU-01 — Windows
+
+INSTALADOR / INSTALLER
+Ejecuta KOMPRUSSR-KU-01-*-Windows-Setup.exe y sigue los pasos. Si Windows muestra SmartScreen, elige «Más información» y «Ejecutar de todas formas» si confías en que el archivo procede del repositorio oficial. El instalador no está firmado.
+Run KOMPRUSSR-KU-01-*-Windows-Setup.exe and follow the prompts. If Windows SmartScreen appears, choose “More info” and “Run anyway” only if you trust that the file came from the official repository. The installer is unsigned.
+
+PAQUETE PORTÁTIL / PORTABLE PACKAGE
+1. Descomprime el ZIP.
+2. Copia «Komprussr KU-01.vst3» a C:\Program Files\Common Files\VST3. Puede que Windows solicite permisos de administrador.
+3. Abre tu programa de música y vuelve a escanear los plugins.
+
+1. Extract the ZIP.
+2. Copy “Komprussr KU-01.vst3” to C:\Program Files\Common Files\VST3. Windows may ask for administrator permission.
+3. Open your music software and rescan its plug-ins.
+
+Ayuda / Help: https://github.com/pedepena/komprussr

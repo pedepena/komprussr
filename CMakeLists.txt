@@ -1,14 +1,20 @@
 cmake_minimum_required(VERSION 3.22)
-project(KOMPRUSSR VERSION 0.1.0 LANGUAGES C CXX)
+project(KOMPRUSSR VERSION 1.0.0 LANGUAGES C CXX)
 
 add_subdirectory(JUCE)
+
+if(APPLE)
+    set(KOMPRUSSR_FORMATS VST3 AU)
+else()
+    set(KOMPRUSSR_FORMATS VST3)
+endif()
 
 juce_add_plugin(KOMPRUSSR
     COMPANY_NAME "KOMPRUSSR"
     BUNDLE_ID "com.pedepena.komprussr"
     PLUGIN_MANUFACTURER_CODE Kmpr
     PLUGIN_CODE K001
-    FORMATS VST3
+    FORMATS ${KOMPRUSSR_FORMATS}
     PRODUCT_NAME "Komprussr KU-01"
     IS_SYNTH FALSE
     NEEDS_MIDI_INPUT FALSE

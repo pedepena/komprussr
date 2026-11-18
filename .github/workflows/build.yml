@@ -1,0 +1,153 @@
+name: Compilar y empaquetar KOMPRUSSR KU-01
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+
+env:
+  JUCE_VERSION: "9.0.5"
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Determinar versión
+        shell: pwsh
+        run: |
+          if ($env:GITHUB_REF_TYPE -eq 'tag') { $version = $env:GITHUB_REF_NAME.TrimStart('v') }
+          else { $version = 'dev' }
+          "VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+      - name: Descargar JUCE
+        shell: bash
+        run: git clone --depth 1 --branch "$JUCE_VERSION" https://github.com/juce-framework/JUCE.git JUCE
+
+      - name: Compilar VST3
+        shell: pwsh
+        run: |
+          cmake -B build -A x64
+          cmake --build build --config Release --target KOMPRUSSR_VST3 --parallel
+
+      - name: Crear ZIP portátil e instalador
+        shell: pwsh
+        run: |
+          $vst3 = Get-ChildItem -Path build -Recurse -Directory -Filter '*.vst3' |
+            Where-Object { $_.FullName -match '[\\/]VST3[\\/][^\\/]+\.vst3$' } | Select-Object -First 1
+          if (-not $vst3) { throw 'No se encontró el bundle VST3 compilado' }
+
+          $dist = Join-Path $PWD 'dist'
+          $stage = Join-Path $dist 'portable-windows'
+          New-Item -ItemType Directory -Force -Path $dist, $stage | Out-Null
+          Copy-Item -LiteralPath $vst3.FullName -Destination $stage -Recurse
+          Copy-Item -LiteralPath 'installer/windows/LEEME.txt', 'LICENSE' -Destination $stage
+          Compress-Archive -Path (Join-Path $stage '*') -DestinationPath "dist/KOMPRUSSR-KU-01-$env:VERSION-Windows-x64.zip" -Force
+
+          choco install innosetup --yes --no-progress
+          $iscc = Join-Path ${env:ProgramFiles(x86)} 'Inno Setup 6/ISCC.exe'
+          if (-not (Test-Path $iscc)) { throw 'No se encontró Inno Setup 6 (ISCC.exe)' }
+          & $iscc "/DAppVersion=$env:VERSION" "/DVst3Dir=$($vst3.FullName)" "/DRepoDir=$PWD" 'installer/windows/komprussr.iss'
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+          Get-ChildItem dist -File | Where-Object { $_.Extension -in '.zip', '.exe' } | ForEach-Object {
+            $hash = (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+            "$hash  $($_.Name)" | Set-Content -Encoding ascii "$($_.FullName).sha256"
+          }
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: KOMPRUSSR-Windows
+          path: dist/KOMPRUSSR-*
+          if-no-files-found: error
+
+  macos:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Determinar versión
+        shell: bash
+        run: |
+          if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then version="${GITHUB_REF_NAME#v}"; else version="dev"; fi
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+
+      - name: Descargar JUCE
+        run: git clone --depth 1 --branch "$JUCE_VERSION" https://github.com/juce-framework/JUCE.git JUCE
+
+      - name: Compilar VST3 y AU universal
+        run: |
+          cmake -B build -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" \
+            -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0
+          cmake --build build --config Release --target KOMPRUSSR_VST3 KOMPRUSSR_AU --parallel
+
+      - name: Validar Audio Unit
+        run: |
+          auval -v aufx K001 Kmpr
+
+      - name: Crear .pkg y ZIP portátil
+        run: bash packaging/package-unix.sh macOS "$VERSION"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: KOMPRUSSR-macOS
+          path: dist/KOMPRUSSR-*
+          if-no-files-found: error
+
+  linux:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Determinar versión
+        shell: bash
+        run: |
+          if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then version="${GITHUB_REF_NAME#v}"; else version="dev"; fi
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+
+      - name: Instalar dependencias de JUCE
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libasound2-dev libx11-dev libxinerama-dev libxext-dev libxrandr-dev \
+            libxcursor-dev libxcomposite-dev libxrender-dev libfreetype-dev libfontconfig1-dev libgl1-mesa-dev
+
+      - name: Descargar JUCE
+        run: git clone --depth 1 --branch "$JUCE_VERSION" https://github.com/juce-framework/JUCE.git JUCE
+
+      - name: Compilar VST3
+        run: |
+          cmake -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build --config Release --target KOMPRUSSR_VST3 --parallel
+
+      - name: Crear paquete portátil
+        run: bash packaging/package-unix.sh Linux "$VERSION"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: KOMPRUSSR-Linux
+          path: dist/KOMPRUSSR-*
+          if-no-files-found: error
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [windows, macos, linux]
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          pattern: KOMPRUSSR-*
+          merge-multiple: true
+      - name: Crear borrador del release
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          name: KOMPRUSSR KU-01 ${{ github.ref_name }}
+          body_path: docs/CHANGELOG.md
+          files: dist/KOMPRUSSR-*

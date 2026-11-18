@@ -54,16 +54,16 @@ Cada modelo cambia de forma coherente la curva de control de ganancia, la rodill
 - **Latencia con Power OFF:** el plugin declara una latencia fija (sobremuestreo), pero en OFF devuelve el audio sin procesar y sin ese retardo. La compensación del host no corrige ese caso, así que al alternar ON/OFF puede haber un desfase mínimo, sin medir. Mejora posible: retrasar la señal sin procesar en OFF lo mismo que declara el plugin. Solo audio; requiere avisar antes de tocar `PluginProcessor`.
 - Mediciones formales (distorsión y curvas de reducción) para publicarlas; `docs/modelos_dsp.md` explica el procedimiento.
 
-## Fase 3: distribución (pendiente)
+## Fase 3: distribución (configurada; falta ejecutar y revisar la publicación)
 Objetivo: que cualquier persona pueda descargar e instalar el plugin en Windows, macOS y Linux, y usarlo en cualquier programa de música compatible.
 
-- **Formatos:** VST3 en los tres sistemas; AU además en macOS. `CMakeLists.txt` solo genera VST3 hoy: hay que añadir `AU` a `FORMATS` para la versión de Mac. Pro Tools (AAX) queda fuera: exige un acuerdo con Avid que no encaja con un plugin gratuito.
-- **Compilación:** automática en GitHub Actions, una máquina por sistema (Windows, macOS, Linux), para no depender de tener un Mac o un Linux. Los dos sistemas necesitan probarse con escucha real por una persona antes de publicar.
-- **Entregables:** Windows: instalador `.exe` y `.zip` con la carpeta `.vst3` (para quien desconfíe de los ejecutables). macOS: instalador `.pkg` con VST3 y AU. Linux: archivo comprimido con la carpeta `.vst3`. Los pasos de instalación para el usuario están en `README.md`.
-- **Firma de Windows:** se solicitará SignPath Foundation (firma gratuita para código abierto: exige licencia OSI y repositorio público, y una página pública de política de firma). Hasta que se apruebe, el instalador mostrará el aviso de Windows y el README lo explica. La firma y la notarización de macOS requieren una cuenta de pago de Apple; de momento no se hacen.
-- **Versión:** la primera versión pública será la 1.0.0. `CMakeLists.txt` aún indica 0.1.0.
-- **Notas de la release:** versión, sistemas y programas de música probados, tipo y ubicación de cada instalador, estado de la firma del `.exe` y una nota clara sobre el aviso SmartScreen mientras no esté firmado.
-- **Referencia:** el responsable tiene el repositorio de otro plugin suyo donde ya se hicieron instaladores. Puede servir de base, pero hay que revisarlo y optimizarlo antes de reutilizarlo.
+- **Formatos:** VST3 en Windows, macOS y Linux; AU también en macOS. `CMakeLists.txt` genera esos formatos según el sistema. Pro Tools (AAX) queda fuera: exige un acuerdo con Avid que no encaja con un plugin gratuito.
+- **Compilación:** `.github/workflows/build.yml` compila en runners de GitHub para cada sistema. La compilación local Windows Release se ha comprobado; todavía falta ejecutar y revisar los paquetes macOS y Linux en GitHub Actions.
+- **Entregables:** Windows: instalador `.exe` y `.zip` portátil. macOS: instalador `.pkg` y `.zip` portátil con VST3 y AU. Linux: paquete `.tar.gz` portátil con VST3 y un script opcional de instalación. El README y los paquetes incluyen instrucciones en español e inglés.
+- **Firma:** decisión del responsable: publicar sin firmar. El `.exe` puede mostrar el aviso SmartScreen; los paquetes macOS tampoco se firman ni notarizan.
+- **Versión:** primera versión pública 1.0.0. `CMakeLists.txt` indica 1.0.0.
+- **Pendiente antes de publicar:** ejecutar el workflow y revisar los artefactos de los tres sistemas; probar macOS/Linux en hosts reales; preparar las notas finales, comprobar los nombres descargables y publicar el borrador de release.
+- **Referencia:** `JunkyNoize` del responsable se usó como referencia para el empaquetado multiplataforma.
 
 ## Documentación
 - `README.md`: portada del proyecto y guía de instalación para usuarios.
