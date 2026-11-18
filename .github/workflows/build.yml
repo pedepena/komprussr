@@ -64,7 +64,7 @@ jobs:
           if-no-files-found: error
 
   macos:
-    runs-on: macos-15
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
 
@@ -82,7 +82,7 @@ jobs:
           cmake -B build -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" \
             -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0
-          cmake --build build --config Release --target KOMPRUSSR_VST3 KOMPRUSSR_AU --parallel
+          cmake --build build --config Release --parallel
 
       - name: Validar Audio Unit
         run: |
@@ -98,7 +98,7 @@ jobs:
           if-no-files-found: error
 
   linux:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
@@ -120,7 +120,7 @@ jobs:
       - name: Compilar VST3
         run: |
           cmake -B build -DCMAKE_BUILD_TYPE=Release
-          cmake --build build --config Release --target KOMPRUSSR_VST3 --parallel
+          cmake --build build --config Release --parallel
 
       - name: Crear paquete portátil
         run: bash packaging/package-unix.sh Linux "$VERSION"
