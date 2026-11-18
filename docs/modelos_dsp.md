@@ -38,9 +38,9 @@ Los tiempos y coeficientes son puntos de partida creativos. `Reparto lento` es l
 | 6K7 | 0,55 | 0,60 | 0,48 | 0,60 | 0,35 | 0,10 | -0,050 | 3,0 | agudos desde 300 Hz | -0,38 |
 | 6SK7 | 1,45 | 0,85 | 0,42 | 0,58 | 0,60 | 0,30 | 0,040 | 2,0 | agudos desde 800 Hz | 0,00 |
 
-Los trims se aplican progresivamente con la reducción de ganancia, por lo que son cero sin reducción y Compression 0 % permanece transparente en nivel. Los trims indicados son puntos de partida; deben reajustarse con renders del plugin para acercar las salidas a ±1 dB con Compression 70 %.
+Los trims se aplican progresivamente con la reducción de ganancia, por lo que son cero sin reducción y Compression 0 % permanece transparente en nivel. Los trims indicados son los valores actuales del código (`modelFor`). El nivel entre válvulas se ha comprobado a oído en FL Studio; una medición con renders (objetivo: salidas a ±1 dB con Compression 70 %) queda como verificación opcional.
 
-Los perfiles, el nivel de referencia, los filtros de banda y los trims son decisiones creativas inspiradas en las válvulas, no mediciones de válvulas ni ajustes de circuitos concretos. Deben afinarse mediante escucha y mediciones.
+Los perfiles, el nivel de referencia, los filtros de banda y los trims son decisiones creativas inspiradas en las válvulas, no mediciones de válvulas ni ajustes de circuitos concretos. Pueden afinarse mediante escucha y mediciones.
 
 ## Comprobación reproducible
 
@@ -51,9 +51,13 @@ Con un host de audio, crea cinco instancias o renders con idénticos ajustes, se
 3. FFT de la salida para comparar armónicos 2.º–5.º con el tono de entrada y con Power apagado.
 4. Nivel integrado (LUFS o RMS) al igualar salidas para escucha ciega; anota si los modelos siguen siendo distinguibles.
 
-Las cifras de reducción y armónicos deben medirse de nuevo tras estos cambios: las tablas de la iteración anterior ya no representan los perfiles actuales. La estabilidad en ejecución y la escucha en host también requieren comprobación.
+Las tablas de este documento coinciden con los perfiles actuales del código. Las cifras medidas de reducción y de armónicos (distorsión) todavía no se han publicado: el procedimiento anterior sirve para obtenerlas. La escucha en host se ha hecho solo en FL Studio (Windows).
 
-Una diferencia audible o espectral es esperable por construcción, pero no se considera validación de calidad. El DSP requiere escucha crítica y medidas antes de usarse en mezclas finales. Configurar/compilar requiere JUCE disponible en `JUCE_DIR` o como subdirectorio del proyecto.
+Una diferencia audible o espectral es esperable por construcción, pero no se considera validación de calidad. Los modelos son una interpretación creativa: conviene evaluarlos por escucha sobre tu propio material. Configurar/compilar requiere JUCE disponible en `JUCE_DIR` o como subdirectorio del proyecto.
+
+## Limitaciones conocidas
+
+- **Latencia con Power OFF.** El plugin declara al host una latencia fija, la del sobremuestreo. Con Power ON el audio pasa por ese sobremuestreo y la cumple; con Power OFF el audio se devuelve sin procesar y sin ese retardo. El host compensa siempre la misma cantidad, así que al alternar entre ON y OFF puede aparecer un desfase mínimo (la compensación del host no corrige este caso). No se ha medido su tamaño ni su efecto audible. Posible mejora: retrasar la señal sin procesar en OFF la misma cantidad que declara el plugin.
 
 ## Referencias técnicas
 

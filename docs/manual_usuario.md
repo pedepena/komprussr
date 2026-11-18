@@ -8,7 +8,7 @@ KOMPRUSSR es un compresor de válvulas de estilo «vari-mu». Un compresor baja 
 
 ### COMPRESSION (0–100 %)
 
-Cuánto se aprieta el sonido. Cerca del 0 % casi no hay compresión. Al subirlo, las partes fuertes se bajan cada vez más y también notas más color de válvula. Empieza con poco y súbelo hasta que te guste lo que oyes.
+Cuánto se aprieta el sonido. Cerca del 0 % casi no hay compresión. Al subirlo, las partes fuertes se bajan cada vez más y también notas más color de válvula. Empieza con poco y súbelo hasta que te guste lo que oyes. Al abrir el plugin por primera vez está en 0 %.
 
 ### MAKE UP GAIN (−12 a +24 dB)
 
@@ -20,7 +20,7 @@ Elige el carácter del compresor (mira «Las cinco válvulas» más abajo). Pued
 
 ### POWER (interruptor)
 
-ON: el compresor trabaja y se encienden la lámpara y las válvulas. OFF: el sonido pasa sin tocarse.
+ON: el compresor trabaja y se encienden la lámpara y las válvulas. OFF: el sonido pasa sin tocarse y las válvulas se apagan. Al encender, las válvulas tardan un par de segundos en iluminarse del todo, como en un equipo de verdad.
 
 ### Medidor GR
 
@@ -36,13 +36,25 @@ Cada válvula cambia lo rápido que reacciona el compresor, lo firme que aprieta
 - **6K7** — Más gruesa y redondeada, algo más oscura. Aporta peso.
 - **6SK7** — La más firme y con más color, y la que reacciona más rápido. El efecto más evidente.
 
+## Engranaje: About y Manual
+
+En la esquina inferior derecha hay un engranaje. Al pulsarlo se abre una capa con dos pestañas:
+
+- **About:** información del plugin y la opción de **comprobar automáticamente si hay una versión nueva**. Si está activada, el plugin consulta de vez en cuando `github.com`; es la única conexión a internet que hace. Puedes desactivarla cuando quieras. Esta opción se guarda en tu usuario, no en tus proyectos.
+- **Manual:** este manual.
+
 ## Consejos
 
 - Empieza con Compression bajo y mira el medidor GR. Si la aguja apenas se mueve, casi no estás comprimiendo.
 - Después de comprimir, sube Make Up Gain hasta igualar el volumen del sonido original. Lo que suena más fuerte suele parecer «mejor», así que iguala el volumen antes de juzgar.
 - Usa Power para alternar entre el sonido original y el comprimido.
 - Prueba cada válvula con el mismo sonido y quédate con la que mejor te suene.
+- Puedes cambiar el tamaño de la ventana arrastrando una esquina; el plugin recuerda el último tamaño.
 
 ## Conviene saber
 
-Funciona en mono y estéreo (VST3). Todos los controles se pueden automatizar y se guardan con tu proyecto. El plugin informa de un pequeño retardo (latencia) al DAW, que lo compensa automáticamente.
+Funciona en mono y estéreo (VST3, y AU en macOS). Todos los controles se pueden automatizar y se guardan con tu proyecto. El plugin informa de un pequeño retardo (latencia) al DAW, que lo compensa automáticamente.
+
+## ¿Algo no funciona?
+
+Abre una incidencia en la página del proyecto en GitHub e indica tu sistema (Windows, macOS o Linux) y el programa de música que usas.
