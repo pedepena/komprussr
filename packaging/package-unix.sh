@@ -1,90 +1,91 @@
 #!/usr/bin/env bash
+# Uso: bash packaging/package-unix.sh <macOS|Linux> <version>
+# Se ejecuta con "bash", asi que no necesita permiso de ejecucion en git.
 set -euo pipefail
 
-system="$1"
-version="$2"
-repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-build_root="$repo_root/build/KOMPRUSSR_artefacts/Release"
-package_root="$repo_root/dist/staging"
-output="$repo_root/dist"
-mkdir -p "$package_root" "$output"
+SISTEMA="${1:?Falta el sistema (macOS o Linux)}"
+VERSION="${2:-0.1.0}"
+NOMBRE="KOMPRUSSR KU-01"
+SALIDA="build/package"
 
-find_bundle() {
-  local format="$1"
-  local suffix="$2"
-  find "$build_root" -type d -path "*/$format/*" -name "*$suffix" -print -quit
-}
+rm -rf "$SALIDA"
+mkdir -p "$SALIDA"
 
-if [[ "$system" == "macOS" ]]; then
-  vst3="$(find_bundle VST3 '.vst3')"
-  au="$(find_bundle AU '.component')"
-  [[ -n "$vst3" && -n "$au" ]] || { echo "Could not find both VST3 and AU bundles under $build_root" >&2; exit 1; }
+# Busca un bundle por nombre dentro de build/ (no depende de la carpeta exacta).
+buscar() { find build -type d -name "$1" | sed -n '1p'; }
 
-  stage="$package_root/KOMPRUSSR-KU-01-${version}-macOS"
-  rm -rf "$stage"
-  mkdir -p "$stage/VST3" "$stage/AU"
-  cp -R "$vst3" "$stage/VST3/"
-  cp -R "$au" "$stage/AU/"
-  cp "$repo_root/LICENSE" "$stage/"
-  cat > "$stage/LEEME.txt" <<'EOF'
-KOMPRUSSR KU-01 — macOS (Apple Silicon e Intel / Apple Silicon and Intel)
+VST3="$(buscar "$NOMBRE.vst3")"
+if [ -z "$VST3" ]; then echo "No se encontro $NOMBRE.vst3 en build/" >&2; exit 1; fi
 
-PAQUETE PORTÁTIL / PORTABLE PACKAGE
-Incluye VST3 y Audio Unit (AU). Este ZIP no instala automáticamente los plugins.
-Includes VST3 and Audio Unit (AU). This ZIP does not install the plug-ins automatically.
+if [ "$SISTEMA" = "macOS" ]; then
+  AU="$(buscar "$NOMBRE.component")"
+  if [ -z "$AU" ]; then echo "No se encontro $NOMBRE.component en build/ (falta AU en CMake?)" >&2; exit 1; fi
 
-VST3: copia «VST3/Komprussr KU-01.vst3» a ~/Library/Audio/Plug-Ins/VST3/.
-AU: copia «AU/Komprussr KU-01.component» a ~/Library/Audio/Plug-Ins/Components/.
-Crea las carpetas si no existen y vuelve a escanear los plugins en tu programa de música. Logic usa AU; otras aplicaciones pueden usar VST3.
+  RAIZ="$SALIDA/raiz"
+  mkdir -p "$RAIZ/Library/Audio/Plug-Ins/VST3" "$RAIZ/Library/Audio/Plug-Ins/Components"
+  ditto "$VST3" "$RAIZ/Library/Audio/Plug-Ins/VST3/$NOMBRE.vst3"
+  ditto "$AU" "$RAIZ/Library/Audio/Plug-Ins/Components/$NOMBRE.component"
 
-VST3: copy “VST3/Komprussr KU-01.vst3” to ~/Library/Audio/Plug-Ins/VST3/.
-AU: copy “AU/Komprussr KU-01.component” to ~/Library/Audio/Plug-Ins/Components/.
-Create the folders if needed and rescan plug-ins in your music software. Logic uses AU; other applications may use VST3.
+  # Firma "ad-hoc" (sin cuenta de Apple): evita que el plugin quede marcado como danado.
+  codesign --force --deep --sign - "$RAIZ/Library/Audio/Plug-Ins/VST3/$NOMBRE.vst3"
+  codesign --force --deep --sign - "$RAIZ/Library/Audio/Plug-Ins/Components/$NOMBRE.component"
 
-INSTALADOR / INSTALLER
-El archivo .pkg instala ambos formatos en las carpetas comunes del sistema. Haz doble clic y sigue los pasos.
-The .pkg installs both formats in the system plug-in folders. Double-click it and follow the prompts.
+  # Que el instalador siempre ponga los plugins en /Library/Audio/Plug-Ins y los actualice.
+  pkgbuild --analyze --root "$RAIZ" "$SALIDA/componentes.plist"
+  python3 - "$SALIDA/componentes.plist" <<'PY'
+import plistlib, sys
+ruta = sys.argv[1]
+with open(ruta, "rb") as f:
+    datos = plistlib.load(f)
+for item in datos:
+    item["BundleIsRelocatable"] = False
+    item["BundleOverwriteAction"] = "upgrade"
+with open(ruta, "wb") as f:
+    plistlib.dump(datos, f)
+PY
 
-Los paquetes no están firmados ni notarizados. Si macOS los bloquea, haz clic con Control y elige «Abrir», o usa «Ajustes del Sistema > Privacidad y seguridad > Abrir igualmente» cuando aparezca. / Packages are not signed or notarized. If macOS blocks them, Control-click and choose “Open”, or use “System Settings > Privacy & Security > Open Anyway” when offered.
-Ayuda / Help: https://github.com/pedepena/komprussr
-EOF
-  ditto -c -k --sequesterRsrc --keepParent "$stage" "$output/KOMPRUSSR-KU-01-${version}-macOS.zip"
+  pkgbuild --root "$RAIZ" \
+    --component-plist "$SALIDA/componentes.plist" \
+    --identifier com.pedepena.komprussr.instalador \
+    --version "$VERSION" \
+    --install-location / \
+    "$SALIDA/KOMPRUSSR-KU-01-macOS-$VERSION.pkg"
 
-  pkgroot="$package_root/pkgroot"
-  rm -rf "$pkgroot"
-  mkdir -p "$pkgroot/Library/Audio/Plug-Ins/VST3" "$pkgroot/Library/Audio/Plug-Ins/Components" \
-    "$pkgroot/usr/local/share/licenses/KOMPRUSSR-KU-01"
-  cp -R "$vst3" "$pkgroot/Library/Audio/Plug-Ins/VST3/"
-  cp -R "$au" "$pkgroot/Library/Audio/Plug-Ins/Components/"
-  cp "$repo_root/LICENSE" "$pkgroot/usr/local/share/licenses/KOMPRUSSR-KU-01/"
-  pkgbuild --root "$pkgroot" --identifier com.pedepena.komprussr --version "$version" \
-    --install-location / --ownership recommended "$output/KOMPRUSSR-KU-01-${version}-macOS.pkg"
-elif [[ "$system" == "Linux" ]]; then
-  vst3="$(find_bundle VST3 '.vst3')"
-  [[ -n "$vst3" ]] || { echo "Could not find a VST3 bundle under $build_root" >&2; exit 1; }
-
-  stage="$package_root/KOMPRUSSR-KU-01-${version}-Linux-x86_64"
-  rm -rf "$stage"
-  mkdir -p "$stage"
-  cp -R "$vst3" "$stage/"
-  cp "$repo_root/installer/linux/install.sh" "$repo_root/installer/linux/LEEME.txt" "$repo_root/LICENSE" "$stage/"
-  chmod +x "$stage/install.sh"
-  tar -czf "$output/KOMPRUSSR-KU-01-${version}-Linux-x86_64.tar.gz" -C "$package_root" "$(basename "$stage")"
+  rm -rf "$RAIZ" "$SALIDA/componentes.plist"
 else
-  echo "Unsupported packaging system: $system" >&2
-  exit 2
+  PAQUETE="KOMPRUSSR-KU-01-Linux-$VERSION"
+  DEST="$SALIDA/$PAQUETE"
+  mkdir -p "$DEST"
+  cp -R "$VST3" "$DEST/"
+
+  cat > "$DEST/instalar.sh" <<'EOF'
+#!/usr/bin/env bash
+# Instala KOMPRUSSR KU-01 solo para tu usuario (~/.vst3).
+# Para todos los usuarios: ./instalar.sh sistema
+set -e
+cd "$(dirname "$0")"
+if [ "${1:-}" = "sistema" ]; then DESTINO="/usr/lib/vst3"; SUDO="sudo"; else DESTINO="$HOME/.vst3"; SUDO=""; fi
+$SUDO mkdir -p "$DESTINO"
+$SUDO rm -rf "$DESTINO/KOMPRUSSR KU-01.vst3"
+$SUDO cp -R "KOMPRUSSR KU-01.vst3" "$DESTINO/"
+echo "Instalado en $DESTINO. Reinicia tu DAW y vuelve a buscar plugins."
+EOF
+  chmod +x "$DEST/instalar.sh"
+
+  cat > "$DEST/LEEME.txt" <<'EOF'
+KOMPRUSSR KU-01 (VST3 para Linux)
+
+1. Abre una terminal en esta carpeta.
+2. Ejecuta: ./instalar.sh
+   (o ./instalar.sh sistema para instalarlo para todos los usuarios)
+3. Reinicia tu DAW y vuelve a buscar plugins.
+
+Para desinstalar, borra la carpeta "KOMPRUSSR KU-01.vst3" de ~/.vst3 (o de /usr/lib/vst3).
+EOF
+
+  tar -czf "$SALIDA/$PAQUETE.tar.gz" -C "$SALIDA" "$PAQUETE"
+  rm -rf "$DEST"
 fi
 
-if command -v shasum >/dev/null 2>&1 || command -v sha256sum >/dev/null 2>&1; then
-  package_files=()
-  for package in "$output"/KOMPRUSSR-KU-01-"$version"-*; do
-    [[ -f "$package" && "$package" != *.sha256 ]] && package_files+=("$(basename "$package")")
-  done
-  if ((${#package_files[@]})); then
-    if command -v shasum >/dev/null 2>&1; then
-      (cd "$output" && shasum -a 256 "${package_files[@]}") > "$output/KOMPRUSSR-KU-01-${version}-${system}.sha256"
-    else
-      (cd "$output" && sha256sum "${package_files[@]}") > "$output/KOMPRUSSR-KU-01-${version}-${system}.sha256"
-    fi
-  fi
-fi
+echo "Paquetes creados en $SALIDA:"
+ls -1 "$SALIDA"

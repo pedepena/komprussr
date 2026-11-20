@@ -1,12 +1,20 @@
 cmake_minimum_required(VERSION 3.22)
 project(KOMPRUSSR VERSION 1.0.0 LANGUAGES C CXX)
 
-add_subdirectory(JUCE)
-
-if(APPLE)
-    set(KOMPRUSSR_FORMATS VST3 AU)
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/JUCE/CMakeLists.txt")
+    add_subdirectory(JUCE)
 else()
-    set(KOMPRUSSR_FORMATS VST3)
+    include(FetchContent)
+    FetchContent_Declare(juce
+        GIT_REPOSITORY https://github.com/juce-framework/JUCE.git
+        GIT_TAG 9.0.5
+        GIT_SHALLOW TRUE)
+    FetchContent_MakeAvailable(juce)
+endif()
+
+set(KOMPRUSSR_FORMATS VST3)
+if(APPLE)
+    list(APPEND KOMPRUSSR_FORMATS AU)
 endif()
 
 juce_add_plugin(KOMPRUSSR
@@ -15,7 +23,7 @@ juce_add_plugin(KOMPRUSSR
     PLUGIN_MANUFACTURER_CODE Kmpr
     PLUGIN_CODE K001
     FORMATS ${KOMPRUSSR_FORMATS}
-    PRODUCT_NAME "Komprussr KU-01"
+    PRODUCT_NAME "KOMPRUSSR KU-01"
     IS_SYNTH FALSE
     NEEDS_MIDI_INPUT FALSE
     NEEDS_MIDI_OUTPUT FALSE
@@ -61,7 +69,7 @@ target_sources(KOMPRUSSR PRIVATE
 target_compile_features(KOMPRUSSR PRIVATE cxx_std_17)
 target_compile_definitions(KOMPRUSSR PUBLIC
     JUCE_WEB_BROWSER=0
-    JUCE_USE_CURL=0
+    JUCE_USE_CURL=1
     JUCE_VST3_CAN_REPLACE_VST2=0
 )
 target_link_libraries(KOMPRUSSR PRIVATE

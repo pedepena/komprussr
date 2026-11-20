@@ -1,149 +1,153 @@
-name: Compilar y empaquetar KOMPRUSSR KU-01
+name: Compilar KOMPRUSSR
 
+# Se ejecuta al subir una etiqueta v* (por ejemplo v1.0.0) y a mano desde
+# Actions > Compilar KOMPRUSSR > Run workflow (sin publicar nada).
 on:
   push:
-    branches: [main]
-    tags: ['v*']
+    tags: ["v*"]
   workflow_dispatch:
 
-env:
-  JUCE_VERSION: "9.0.5"
+permissions:
+  contents: write
 
 jobs:
-  windows:
-    runs-on: windows-latest
+  build:
+    name: ${{ matrix.nombre }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: windows-latest, nombre: Windows }
+          - { os: ubuntu-latest, nombre: Linux }
+          - { os: macos-latest, nombre: macOS }
+    env:
+      # "true" solo si has creado el secreto SIGNPATH_API_TOKEN (firma de Windows).
+      FIRMAR: ${{ secrets.SIGNPATH_API_TOKEN != '' }}
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Descargar el codigo
+        uses: actions/checkout@v4
 
-      - name: Determinar versión
-        shell: pwsh
-        run: |
-          if ($env:GITHUB_REF_TYPE -eq 'tag') { $version = $env:GITHUB_REF_NAME.TrimStart('v') }
-          else { $version = 'dev' }
-          "VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
-
-      - name: Descargar JUCE
-        shell: bash
-        run: git clone --depth 1 --branch "$JUCE_VERSION" https://github.com/juce-framework/JUCE.git JUCE
-
-      - name: Compilar VST3
-        shell: pwsh
-        run: |
-          cmake -B build -A x64
-          cmake --build build --config Release --target KOMPRUSSR_VST3 --parallel
-
-      - name: Crear ZIP portátil e instalador
-        shell: pwsh
-        run: |
-          $vst3 = Get-ChildItem -Path build -Recurse -Directory -Filter '*.vst3' |
-            Where-Object { $_.FullName -match '[\\/]VST3[\\/][^\\/]+\.vst3$' } | Select-Object -First 1
-          if (-not $vst3) { throw 'No se encontró el bundle VST3 compilado' }
-
-          $dist = Join-Path $PWD 'dist'
-          $stage = Join-Path $dist 'portable-windows'
-          New-Item -ItemType Directory -Force -Path $dist, $stage | Out-Null
-          Copy-Item -LiteralPath $vst3.FullName -Destination $stage -Recurse
-          Copy-Item -LiteralPath 'installer/windows/LEEME.txt', 'LICENSE' -Destination $stage
-          Compress-Archive -Path (Join-Path $stage '*') -DestinationPath "dist/KOMPRUSSR-KU-01-$env:VERSION-Windows-x64.zip" -Force
-
-          choco install innosetup --yes --no-progress
-          $iscc = Join-Path ${env:ProgramFiles(x86)} 'Inno Setup 6/ISCC.exe'
-          if (-not (Test-Path $iscc)) { throw 'No se encontró Inno Setup 6 (ISCC.exe)' }
-          & $iscc "/DAppVersion=$env:VERSION" "/DVst3Dir=$($vst3.FullName)" "/DRepoDir=$PWD" 'installer/windows/komprussr.iss'
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-
-          Get-ChildItem dist -File | Where-Object { $_.Extension -in '.zip', '.exe' } | ForEach-Object {
-            $hash = (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
-            "$hash  $($_.Name)" | Set-Content -Encoding ascii "$($_.FullName).sha256"
-          }
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: KOMPRUSSR-Windows
-          path: dist/KOMPRUSSR-*
-          if-no-files-found: error
-
-  macos:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Determinar versión
+      - name: Calcular la version
         shell: bash
         run: |
-          if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then version="${GITHUB_REF_NAME#v}"; else version="dev"; fi
-          echo "VERSION=$version" >> "$GITHUB_ENV"
+          if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then v="${GITHUB_REF_NAME#v}"; else v="0.1.0"; fi
+          echo "VERSION=$v" >> "$GITHUB_ENV"
 
-      - name: Descargar JUCE
-        run: git clone --depth 1 --branch "$JUCE_VERSION" https://github.com/juce-framework/JUCE.git JUCE
-
-      - name: Compilar VST3 y AU universal
-        run: |
-          cmake -B build -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" \
-            -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0
-          cmake --build build --config Release --parallel
-
-      - name: Crear .pkg y ZIP portátil
-        run: bash packaging/package-unix.sh macOS "$VERSION"
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: KOMPRUSSR-macOS
-          path: dist/KOMPRUSSR-*
-          if-no-files-found: error
-
-  linux:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Determinar versión
-        shell: bash
-        run: |
-          if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then version="${GITHUB_REF_NAME#v}"; else version="dev"; fi
-          echo "VERSION=$version" >> "$GITHUB_ENV"
-
-      - name: Instalar dependencias de JUCE
+      - name: Instalar librerias de Linux
+        if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libasound2-dev libx11-dev libxi-dev libxinerama-dev libxext-dev libxrandr-dev \
-            libxcursor-dev libxcomposite-dev libxrender-dev libfreetype-dev libfontconfig1-dev libgl1-mesa-dev
+          sudo apt-get install -y libasound2-dev libx11-dev libxcomposite-dev libxcursor-dev \
+            libxext-dev libxinerama-dev libxrandr-dev libxrender-dev libfreetype-dev \
+            libfontconfig1-dev libgl1-mesa-dev libcurl4-openssl-dev
 
-      - name: Descargar JUCE
-        run: git clone --depth 1 --branch "$JUCE_VERSION" https://github.com/juce-framework/JUCE.git JUCE
-
-      - name: Compilar VST3
+      - name: Configurar
+        shell: bash
         run: |
-          cmake -B build -DCMAKE_BUILD_TYPE=Release
-          cmake --build build --config Release --parallel
+          args=(-B build -DCMAKE_BUILD_TYPE=Release)
+          if [ "$RUNNER_OS" = "macOS" ]; then
+            args+=(-DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -DCMAKE_OSX_DEPLOYMENT_TARGET=10.15)
+          fi
+          cmake "${args[@]}"
 
-      - name: Crear paquete portátil
-        run: bash packaging/package-unix.sh Linux "$VERSION"
+      - name: Compilar
+        run: cmake --build build --config Release --parallel
 
-      - uses: actions/upload-artifact@v4
+      # ---------- Windows ----------
+      - name: Crear instalador de Windows
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          choco install innosetup --no-progress -y
+          $iscc = (Get-Command ISCC.exe -ErrorAction SilentlyContinue).Source
+          if (-not $iscc) { $iscc = 'C:\Program Files (x86)\Inno Setup 6\ISCC.exe' }
+          & $iscc "/DPluginVersion=$env:VERSION" "/FKOMPRUSSR-KU-01-Windows-$env:VERSION-Setup" installer/KOMPRUSSR.iss
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      # Firma opcional con SignPath (gratis para codigo abierto). Se salta sola
+      # mientras no exista el secreto SIGNPATH_API_TOKEN.
+      - name: Subir instalador sin firmar
+        id: sin-firmar
+        if: runner.os == 'Windows' && env.FIRMAR == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: instalador-sin-firmar
+          path: installer/output/*.exe
+
+      - name: Firmar con SignPath
+        if: runner.os == 'Windows' && env.FIRMAR == 'true'
+        uses: signpath/github-action-submit-signing-request@v3
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: komprussr
+          signing-policy-slug: release-signing
+          github-artifact-id: ${{ steps.sin-firmar.outputs.artifact-id }}
+          wait-for-completion: true
+          output-artifact-directory: installer/firmado
+
+      - name: Usar el instalador firmado
+        if: runner.os == 'Windows' && env.FIRMAR == 'true'
+        shell: pwsh
+        run: |
+          $zip = Get-ChildItem installer/firmado -Filter *.zip -ErrorAction SilentlyContinue
+          if ($zip) { Expand-Archive $zip[0].FullName installer/firmado -Force }
+          Copy-Item installer/firmado/*.exe installer/output/ -Force
+
+      - name: Subir instalador de Windows
+        if: runner.os == 'Windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: KOMPRUSSR-Windows
+          path: installer/output/*.exe
+          if-no-files-found: error
+
+      # ---------- macOS y Linux ----------
+      - name: Empaquetar macOS o Linux
+        if: runner.os != 'Windows'
+        shell: bash
+        run: bash packaging/package-unix.sh "$RUNNER_OS" "$VERSION"
+
+      - name: Subir paquete macOS
+        if: runner.os == 'macOS'
+        uses: actions/upload-artifact@v4
+        with:
+          name: KOMPRUSSR-macOS
+          path: build/package/*.pkg
+          if-no-files-found: error
+
+      - name: Subir paquete Linux
+        if: runner.os == 'Linux'
+        uses: actions/upload-artifact@v4
         with:
           name: KOMPRUSSR-Linux
-          path: dist/KOMPRUSSR-*
+          path: build/package/*.tar.gz
           if-no-files-found: error
 
   release:
+    name: Publicar archivos de GitHub Release
     if: startsWith(github.ref, 'refs/tags/v')
-    needs: [windows, macos, linux]
-    runs-on: ubuntu-22.04
-    permissions:
-      contents: write
+    needs: build
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
+      - name: Descargar instaladores y paquetes
+        uses: actions/download-artifact@v4
         with:
-          path: dist
           pattern: KOMPRUSSR-*
+          path: release-assets
           merge-multiple: true
-      - name: Crear borrador del release
+
+      - name: Adjuntar archivos a la version
         uses: softprops/action-gh-release@v2
         with:
-          draft: true
-          name: KOMPRUSSR KU-01 ${{ github.ref_name }}
-          body_path: docs/CHANGELOG.md
-          files: dist/KOMPRUSSR-*
+          files: release-assets/*
+          generate_release_notes: true
+          body: |
+            ## Cómo instalar
+            - **Windows:** ejecuta el `.exe` y sigue el asistente.
+            - **macOS:** abre el `.pkg` (si macOS lo bloquea, clic derecho > Abrir). Instala VST3 y AU.
+            - **Linux:** descomprime el `.tar.gz` y ejecuta `./instalar.sh`.
+
+            Después, reinicia tu DAW y vuelve a buscar plugins.
