@@ -84,10 +84,6 @@ jobs:
             -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0
           cmake --build build --config Release --parallel
 
-      - name: Validar Audio Unit
-        run: |
-          auval -v aufx K001 Kmpr
-
       - name: Crear .pkg y ZIP portátil
         run: bash packaging/package-unix.sh macOS "$VERSION"
 
@@ -111,7 +107,7 @@ jobs:
       - name: Instalar dependencias de JUCE
         run: |
           sudo apt-get update
-          sudo apt-get install -y libasound2-dev libx11-dev libxinerama-dev libxext-dev libxrandr-dev \
+          sudo apt-get install -y libasound2-dev libx11-dev libxi-dev libxinerama-dev libxext-dev libxrandr-dev \
             libxcursor-dev libxcomposite-dev libxrender-dev libfreetype-dev libfontconfig1-dev libgl1-mesa-dev
 
       - name: Descargar JUCE

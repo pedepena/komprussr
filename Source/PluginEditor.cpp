@@ -5,6 +5,9 @@
 
 namespace
 {
+constexpr int compressionDragPixels = 500;
+constexpr int makeupDragPixels = 500;
+
 void drawGear (juce::Graphics& g, juce::Rectangle<float> bounds, juce::Colour colour)
 {
     bounds = bounds.reduced (2.0f);
@@ -174,11 +177,20 @@ KomprussrAudioProcessorEditor::KomprussrAudioProcessorEditor (KomprussrAudioProc
     compression.setTextBoxStyle (juce::Slider::NoTextBox, false, 0, 0);
     compression.setRotaryParameters (juce::degreesToRadians (-135.0f), juce::degreesToRadians (135.0f), true);
     compression.setRange (0.0, 100.0, 0.01);
+    compression.setMouseDragSensitivity (compressionDragPixels);
+    compression.setSliderSnapsToMousePosition (false);
+    compression.setVelocityBasedMode (false);
+    compression.setVelocityModeParameters (1.0, 1, 0.0, true, juce::ModifierKeys::shiftModifier);
+    compression.setDoubleClickReturnValue (true, 0.0);
 
     makeup.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
     makeup.setTextBoxStyle (juce::Slider::NoTextBox, false, 0, 0);
     makeup.setRotaryParameters (juce::degreesToRadians (-135.0f), juce::degreesToRadians (135.0f), true);
     makeup.setRange (-12.0, 24.0, 0.01);
+    makeup.setMouseDragSensitivity (makeupDragPixels);
+    makeup.setSliderSnapsToMousePosition (false);
+    makeup.setVelocityBasedMode (false);
+    makeup.setVelocityModeParameters (1.0, 1, 0.0, true, juce::ModifierKeys::shiftModifier);
     makeup.setDoubleClickReturnValue (true, 0.0);
 
     tube.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
