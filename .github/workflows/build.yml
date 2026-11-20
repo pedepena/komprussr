@@ -32,16 +32,16 @@ jobs:
       - name: Calcular la version
         shell: bash
         run: |
-          if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then v="${GITHUB_REF_NAME#v}"; else v="0.1.0"; fi
+          if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then v="${GITHUB_REF_NAME#v}"; else v="1.0.0"; fi
           echo "VERSION=$v" >> "$GITHUB_ENV"
 
       - name: Instalar librerias de Linux
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libasound2-dev libx11-dev libxcomposite-dev libxcursor-dev \
+          sudo apt-get install -y libasound2-dev libjack-jackd2-dev ladspa-sdk libx11-dev libxcomposite-dev libxcursor-dev \
             libxext-dev libxinerama-dev libxrandr-dev libxrender-dev libfreetype-dev \
-            libfontconfig1-dev libgl1-mesa-dev libcurl4-openssl-dev
+            libfontconfig1-dev libgl1-mesa-dev libxi-dev libcurl4-openssl-dev
 
       - name: Configurar
         shell: bash

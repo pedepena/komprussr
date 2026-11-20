@@ -4,7 +4,7 @@
 set -euo pipefail
 
 SISTEMA="${1:?Falta el sistema (macOS o Linux)}"
-VERSION="${2:-0.1.0}"
+VERSION="${2:-1.0.0}"
 NOMBRE="KOMPRUSSR KU-01"
 SALIDA="build/package"
 
@@ -25,6 +25,8 @@ if [ "$SISTEMA" = "macOS" ]; then
   mkdir -p "$RAIZ/Library/Audio/Plug-Ins/VST3" "$RAIZ/Library/Audio/Plug-Ins/Components"
   ditto "$VST3" "$RAIZ/Library/Audio/Plug-Ins/VST3/$NOMBRE.vst3"
   ditto "$AU" "$RAIZ/Library/Audio/Plug-Ins/Components/$NOMBRE.component"
+  test -d "$RAIZ/Library/Audio/Plug-Ins/VST3/$NOMBRE.vst3"
+  test -d "$RAIZ/Library/Audio/Plug-Ins/Components/$NOMBRE.component"
 
   # Firma "ad-hoc" (sin cuenta de Apple): evita que el plugin quede marcado como danado.
   codesign --force --deep --sign - "$RAIZ/Library/Audio/Plug-Ins/VST3/$NOMBRE.vst3"

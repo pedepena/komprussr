@@ -30,6 +30,7 @@ juce_add_plugin(KOMPRUSSR
     IS_MIDI_EFFECT FALSE
     EDITOR_WANTS_KEYBOARD_FOCUS FALSE
     COPY_PLUGIN_AFTER_BUILD FALSE
+    NEEDS_CURL TRUE
 )
 juce_generate_juce_header(KOMPRUSSR)
 
@@ -69,7 +70,6 @@ target_sources(KOMPRUSSR PRIVATE
 target_compile_features(KOMPRUSSR PRIVATE cxx_std_17)
 target_compile_definitions(KOMPRUSSR PUBLIC
     JUCE_WEB_BROWSER=0
-    JUCE_USE_CURL=1
     JUCE_VST3_CAN_REPLACE_VST2=0
 )
 target_link_libraries(KOMPRUSSR PRIVATE
