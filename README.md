@@ -4,7 +4,7 @@ Compresor valvular tipo Vari-Mu en formato de plugin de audio (VST3 y AU), con s
 
 Es gratuito y de código abierto. Los paquetes de Windows, macOS y Linux se generan con GitHub Actions; el instalador de Windows se distribuye sin firma digital.
 
-> **Versión 1.0.0 — estado:** el plugin está terminado y listo para su primera versión pública. Se ha probado en FL Studio. Las descargas estarán en [Releases](../../releases) cuando se publique la versión.
+> **Versión 1.0.0 — estado:** el plugin está terminado y listo para su primera versión pública. Se ha probado en Windows con FL Studio; macOS y Linux todavía no se han probado. Las descargas estarán en [Releases](../../releases) cuando se publique la versión.
 
 ## Descarga e instalación
 
@@ -45,11 +45,11 @@ Los paquetes no están firmados ni notarizados; macOS puede mostrar un aviso de 
 | macOS | VST3 y AU |
 | Linux | VST3 |
 
-Funciona en pistas mono y estéreo. Se ha probado en FL Studio; debería funcionar en cualquier programa que admita VST3 (o AU en Mac), pero todavía no se ha comprobado en todos. Si encuentras un problema, abre una [incidencia](../../issues) indicando tu sistema y tu programa de música.
+Funciona en pistas mono y estéreo. Windows se ha probado en FL Studio; macOS y Linux todavía no se han probado. Debería funcionar en cualquier programa que admita VST3 (o AU en Mac), pero todavía no se ha comprobado en todos. Si encuentras un problema, abre una [incidencia](../../issues) indicando tu sistema y tu programa de música.
 
 ## Download and installation (English)
 
-**Version 1.0.0.** Download your platform's files from [Releases](../../releases) when the release is published. Each release provides the installer and portable package described below.
+**Version 1.0.0.** Download your platform's files from [Releases](../../releases) when the release is published. Each release provides the installer and portable package described below. Windows has been tested with FL Studio; macOS and Linux have not been tested yet.
 
 ### Windows
 
