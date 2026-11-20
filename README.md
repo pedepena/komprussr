@@ -4,7 +4,7 @@ Compresor valvular tipo Vari-Mu en formato de plugin de audio (VST3 y AU), con s
 
 Es gratuito y de código abierto. Los paquetes de Windows, macOS y Linux se generan con GitHub Actions; el instalador de Windows se distribuye sin firma digital.
 
-> **Estado:** el plugin está terminado y listo para su primera versión pública. Se ha probado en FL Studio. Las descargas están en la sección [Releases](../../releases).
+> **Versión 1.0.0 — estado:** el plugin está terminado y listo para su primera versión pública. Se ha probado en FL Studio. Las descargas estarán en [Releases](../../releases) cuando se publique la versión.
 
 ## Descarga e instalación
 
@@ -49,7 +49,7 @@ Funciona en pistas mono y estéreo. Se ha probado en FL Studio; debería funcion
 
 ## Download and installation (English)
 
-Download your platform's files from [Releases](../../releases). Each release provides the installer and portable package described below.
+**Version 1.0.0.** Download your platform's files from [Releases](../../releases) when the release is published. Each release provides the installer and portable package described below.
 
 ### Windows
 

@@ -1,6 +1,6 @@
 #define PluginName "KOMPRUSSR KU-01"
 #ifndef PluginVersion
-  #define PluginVersion "0.1.0"
+  #define PluginVersion "1.0.0"
 #endif
 
 [Setup]

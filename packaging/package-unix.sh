@@ -4,7 +4,7 @@
 set -euo pipefail
 
 SISTEMA="${1:?Falta el sistema (macOS o Linux)}"
-VERSION="${2:-0.1.0}"
+VERSION="${2:-1.0.0}"
 NOMBRE="KOMPRUSSR KU-01"
 SALIDA="build/package"
 
