@@ -69,7 +69,7 @@ const KomprussrAudioProcessor::ValveModel& KomprussrAudioProcessor::modelFor (in
     return models[juce::jlimit (0, 4, index)];
 }
 
-void KomprussrAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer&)
+void KomprussrAudioProcessor::processBlockImpl (juce::AudioBuffer<double>& buffer, juce::MidiBuffer&)
 {
     juce::ScopedNoDenormals noDenormals;
     const auto channels = getTotalNumInputChannels();
@@ -79,45 +79,46 @@ void KomprussrAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
     const auto power = parameters.getRawParameterValue ("power")->load() >= 0.5f;
     if (! power)
     {
-        envelopeSquared = 0.0f;
-        fastReductionDb = slowReductionDb = 0.0f;
+        envelopeSquared = 0.0;
+        fastReductionDb = slowReductionDb = 0.0;
         gainReductionDb.store (0.0f, std::memory_order_relaxed);
         return;
     }
-    const auto compression = parameters.getRawParameterValue ("compression")->load() * 0.01f;
-    const auto makeup = dbToGain (parameters.getRawParameterValue ("make_up_gain")->load());
+    const double compression = parameters.getRawParameterValue ("compression")->load() * 0.01;
+    const double makeup = dbToGain (parameters.getRawParameterValue ("make_up_gain")->load());
     const auto tube = juce::roundToInt (parameters.getRawParameterValue ("tube")->load());
     const auto& model = modelFor (tube);
-    const auto threshold = -6.0f - 34.0f * std::pow (compression, 0.60f) + model.thresholdOffsetDb;
-    const auto ratio = 1.25f + (model.maximumRatio - 1.25f) * std::pow (compression, model.curveExponent);
+    const double threshold = -6.0 - 34.0 * std::pow (compression, 0.60) + model.thresholdOffsetDb;
+    const double ratio = 1.25 + (model.maximumRatio - 1.25) * std::pow (compression, (double) model.curveExponent);
     if (tube != activeTube)
     {
         previousTube = activeTube;
         activeTube = tube;
         modelFadeSamples = modelFadeLength;
     }
-    const auto attack = std::exp (-1.0f / (float (currentSampleRate) * model.attackMs * 0.001f));
-    const auto fastRelease = std::exp (-1.0f / (float (currentSampleRate) * model.fastReleaseMs * 0.001f));
-    const auto slowRelease = std::exp (-1.0f / (float (currentSampleRate) * model.slowReleaseMs * 0.001f));
-    const auto detectorAttack = std::exp (-1.0f / (float (currentSampleRate) * 0.00025f));
-    const auto detectorRelease = std::exp (-1.0f / (float (currentSampleRate) * 0.002f));
+    const double sr = currentSampleRate;
+    const double attack = std::exp (-1.0 / (sr * model.attackMs * 0.001));
+    const double fastRelease = std::exp (-1.0 / (sr * model.fastReleaseMs * 0.001));
+    const double slowRelease = std::exp (-1.0 / (sr * model.slowReleaseMs * 0.001));
+    const double detectorAttack = std::exp (-1.0 / (sr * 0.00025));
+    const double detectorRelease = std::exp (-1.0 / (sr * 0.002));
     float peakReduction = 0.0f;
 
     const auto numSamples = buffer.getNumSamples();
     const auto chunkCapacity = juce::jmax (1, oversampledBuffer.getNumSamples() / 2);
-    const auto highRateHz = static_cast<float> (currentSampleRate * 2.0);
-    const auto transientAttack = std::exp (-1.0f / (highRateHz * 0.00025f));
-    const auto transientRelease = std::exp (-1.0f / (highRateHz * 0.003f));
-    float trimGains[5] {};
-    float toneCoefficients[5] {};
-    float splitCoefficients[5] {};
+    const double highRateHz = sr * 2.0;
+    const double transientAttack = std::exp (-1.0 / (highRateHz * 0.00025));
+    const double transientRelease = std::exp (-1.0 / (highRateHz * 0.003));
+    double trimGains[5] {};
+    double toneCoefficients[5] {};
+    double splitCoefficients[5] {};
     for (int index = 0; index < 5; ++index)
     {
         const auto& profile = modelFor (index);
-        const auto cutoff = profile.toneCutoffHz;
-        toneCoefficients[index] = cutoff / (cutoff + highRateHz / juce::MathConstants<float>::twoPi);
-        const auto splitHz = profile.splitHz;
-        splitCoefficients[index] = splitHz > 0.0f ? splitHz / (splitHz + highRateHz / juce::MathConstants<float>::twoPi) : 0.0f;
+        const double cutoff = profile.toneCutoffHz;
+        toneCoefficients[index] = cutoff / (cutoff + highRateHz / juce::MathConstants<double>::twoPi);
+        const double splitHz = profile.splitHz;
+        splitCoefficients[index] = splitHz > 0.0 ? splitHz / (splitHz + highRateHz / juce::MathConstants<double>::twoPi) : 0.0;
         trimGains[index] = dbToGain (profile.makeupTrimDb);
     }
     for (int chunkStart = 0; chunkStart < numSamples; chunkStart += chunkCapacity)
@@ -125,49 +126,49 @@ void KomprussrAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
         const auto chunkSamples = juce::jmin (chunkCapacity, numSamples - chunkStart);
         for (int i = 0; i < chunkSamples; ++i)
         {
-            float detectorPower = 0.0f;
+            double detectorPower = 0.0;
             for (int ch = 0; ch < channels; ++ch)
             {
                 const auto sample = buffer.getSample (ch, chunkStart + i);
                 detectorPower += sample * sample;
             }
-            detectorPower /= static_cast<float> (juce::jmax (1, channels));
+            detectorPower /= static_cast<double> (juce::jmax (1, channels));
             const auto envelopeCoeff = detectorPower > envelopeSquared ? detectorAttack : detectorRelease;
-            envelopeSquared = envelopeCoeff * envelopeSquared + (1.0f - envelopeCoeff) * detectorPower;
-            const auto levelDb = 10.0f * std::log10 (juce::jmax (envelopeSquared, 1.0e-12f));
-            const auto over = levelDb - threshold;
-            float reductionDb = 0.0f;
-            if (compression > 0.0f && model.kneeDb > 0.0f && over > -model.kneeDb * 0.5f && over < model.kneeDb * 0.5f)
+            envelopeSquared = envelopeCoeff * envelopeSquared + (1.0 - envelopeCoeff) * detectorPower;
+            const double levelDb = 10.0 * std::log10 (juce::jmax (envelopeSquared, 1.0e-12));
+            const double over = levelDb - threshold;
+            double reductionDb = 0.0;
+            if (compression > 0.0 && model.kneeDb > 0.0f && over > -model.kneeDb * 0.5 && over < model.kneeDb * 0.5)
             {
-                const auto x = over + model.kneeDb * 0.5f;
-                reductionDb = (1.0f - 1.0f / ratio) * x * x / (2.0f * model.kneeDb);
+                const double x = over + model.kneeDb * 0.5;
+                reductionDb = (1.0 - 1.0 / ratio) * x * x / (2.0 * model.kneeDb);
             }
-            else if (compression > 0.0f && over >= model.kneeDb * 0.5f)
-                reductionDb = over * (1.0f - 1.0f / ratio);
+            else if (compression > 0.0 && over >= model.kneeDb * 0.5)
+                reductionDb = over * (1.0 - 1.0 / ratio);
 
-            const auto targetReductionDb = juce::jmax (0.0f, reductionDb);
+            const double targetReductionDb = juce::jmax (0.0, reductionDb);
             const auto fastCoeff = targetReductionDb > fastReductionDb ? attack : fastRelease;
             const auto slowCoeff = targetReductionDb > slowReductionDb ? attack : slowRelease;
-            fastReductionDb = fastCoeff * fastReductionDb + (1.0f - fastCoeff) * targetReductionDb;
-            slowReductionDb = slowCoeff * slowReductionDb + (1.0f - slowCoeff) * targetReductionDb;
-            const auto measuredReduction = fastReductionDb * (1.0f - model.slowReleaseMix)
-                                         + slowReductionDb * model.slowReleaseMix;
+            fastReductionDb = fastCoeff * fastReductionDb + (1.0 - fastCoeff) * targetReductionDb;
+            slowReductionDb = slowCoeff * slowReductionDb + (1.0 - slowCoeff) * targetReductionDb;
+            const float measuredReduction = fastReductionDb * (1.0 - model.slowReleaseMix)
+                                           + slowReductionDb * model.slowReleaseMix;
             peakReduction = juce::jmax (peakReduction, measuredReduction);
-            const auto levelAmount = juce::jlimit (0.0f, 1.0f, (levelDb + 36.0f) / 30.0f);
-            const auto colour = compression > 0.0f
-                ? juce::jlimit (0.0f, 0.95f, 0.02f * compression + measuredReduction / 8.0f)
-                : 0.0f;
-            const auto toneAmount = juce::jlimit (0.0f, 1.0f, measuredReduction / 10.0f);
-            const auto trimAmount = juce::jlimit (0.0f, 1.0f, measuredReduction / 6.8f);
+            const double levelAmount = juce::jlimit (0.0, 1.0, (levelDb + 36.0) / 30.0);
+            const double colour = compression > 0.0
+                ? juce::jlimit (0.0, 0.95, 0.02 * compression + measuredReduction / 8.0)
+                : 0.0;
+            const double toneAmount = juce::jlimit (0.0, 1.0, measuredReduction / 10.0);
+            const double trimAmount = juce::jlimit (0.0, 1.0, measuredReduction / 6.8);
             colourBuffer.setSample (0, i, colour);
             colourBuffer.setSample (1, i, levelAmount);
             colourBuffer.setSample (2, i, toneAmount);
             colourBuffer.setSample (3, i, trimAmount);
             colourBuffer.setSample (4, i, measuredReduction);
-            const auto lookupPosition = juce::jlimit (0.0f, 6000.0f, measuredReduction * 100.0f);
+            const double lookupPosition = juce::jlimit (0.0, 6000.0, measuredReduction * 100.0);
             const auto lookupIndex = static_cast<int> (lookupPosition);
-            const auto lookupFraction = lookupPosition - static_cast<float> (lookupIndex);
-            const auto gain = reductionGainTable[lookupIndex]
+            const double lookupFraction = lookupPosition - static_cast<double> (lookupIndex);
+            const double gain = reductionGainTable[lookupIndex]
                 + lookupFraction * (reductionGainTable[juce::jmin (6000, lookupIndex + 1)] - reductionGainTable[lookupIndex]);
             for (int ch = 0; ch < channels; ++ch)
                 buffer.setSample (ch, chunkStart + i, buffer.getSample (ch, chunkStart + i) * gain * makeup);
@@ -175,66 +176,66 @@ void KomprussrAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
 
         for (int ch = 0; ch < channels; ++ch)
             oversampledBuffer.copyFrom (ch, 0, buffer, ch, chunkStart, chunkSamples);
-        auto sourceBlock = juce::dsp::AudioBlock<float> (oversampledBuffer).getSubBlock (0, static_cast<size_t> (chunkSamples));
+        auto sourceBlock = juce::dsp::AudioBlock<double> (oversampledBuffer).getSubBlock (0, static_cast<size_t> (chunkSamples));
         auto highRate = valveOversampling.processSamplesUp (sourceBlock);
         const auto highRateChannels = static_cast<int> (highRate.getNumChannels());
         const auto highRateSamples = static_cast<int> (highRate.getNumSamples());
         for (int i = 0; i < highRateSamples; ++i)
         {
             const auto baseIndex = juce::jmin (chunkSamples - 1, i / 2);
-            const auto colour = colourBuffer.getSample (0, baseIndex);
-            const auto levelAmount = colourBuffer.getSample (1, baseIndex);
-            const auto toneAmount = colourBuffer.getSample (2, baseIndex);
-            const auto trimAmount = colourBuffer.getSample (3, baseIndex);
-            const auto measuredReduction = colourBuffer.getSample (4, baseIndex);
-            const auto fade = modelFadeSamples > 0 ? 1.0f - float (modelFadeSamples) / float (modelFadeLength) : 1.0f;
+            const double colour = colourBuffer.getSample (0, baseIndex);
+            const double levelAmount = colourBuffer.getSample (1, baseIndex);
+            const double toneAmount = colourBuffer.getSample (2, baseIndex);
+            const double trimAmount = colourBuffer.getSample (3, baseIndex);
+            const float measuredReduction = colourBuffer.getSample (4, baseIndex);
+            const double fade = modelFadeSamples > 0 ? 1.0 - double (modelFadeSamples) / double (modelFadeLength) : 1.0;
             for (int ch = 0; ch < highRateChannels; ++ch)
             {
-                const auto input = highRate.getSample (static_cast<size_t> (ch), static_cast<size_t> (i));
-                auto processModel = [&] (int modelIndex)
+                const double input = highRate.getSample (static_cast<size_t> (ch), static_cast<size_t> (i));
+                auto processModel = [&] (int modelIndex) -> double
                 {
-                    if (compression <= 0.0f)
+                    if (compression <= 0.0)
                         return input;
                     const auto& profile = modelFor (modelIndex);
                     auto& transient = transientEnvelope[modelIndex][ch];
-                    const auto magnitude = std::abs (input);
+                    const double magnitude = std::abs (input);
                     const auto transientCoeff = magnitude > transient ? transientAttack : transientRelease;
-                    const auto transientExcess = juce::jmax (0.0f, magnitude - transient);
-                    transient = transientCoeff * transient + (1.0f - transientCoeff) * magnitude;
-                    const auto transientDrive = profile.transientGrain * transientExcess;
-                    const auto drive = 1.0f + juce::jmin (profile.maximumDrive, profile.harmonicDrive * colour) + transientDrive;
+                    const double transientExcess = juce::jmax (0.0, magnitude - transient);
+                    transient = transientCoeff * transient + (1.0 - transientCoeff) * magnitude;
+                    const double transientDrive = profile.transientGrain * transientExcess;
+                    const double drive = 1.0 + juce::jmin ((double) profile.maximumDrive, profile.harmonicDrive * colour) + transientDrive;
                     auto& splitLow = splitLowState[modelIndex][ch];
                     splitLow += splitCoefficients[modelIndex] * (input - splitLow);
-                    const auto low = splitLow;
-                    const auto high = input - low;
-                    const auto selectedBand = profile.splitMode == 1 ? low : profile.splitMode == 2 ? high : input;
-                    const auto preGain = profile.referenceGain * dbToGain (0.3f * measuredReduction);
-                    const auto driven = selectedBand * preGain * drive;
-                    const auto curvedInput = driven + profile.asymmetry * driven * driven;
-                    const auto roundedCurve = std::tanh (curvedInput);
-                    const auto angularCurve = curvedInput / (1.0f + 0.75f * std::abs (curvedInput));
-                    const auto baseCurve = roundedCurve + profile.curveHardness * (angularCurve - roundedCurve);
-                    const auto evenMix = profile.evenHarmonic * (1.0f - 0.65f * levelAmount);
-                    const auto oddMix = profile.oddHarmonic * (0.35f + 0.65f * levelAmount);
-                    const auto harmonicAmount = profile.harmonicDrive * colour;
-                    const auto saturated = baseCurve
+                    const double low = splitLow;
+                    const double high = input - low;
+                    const double selectedBand = profile.splitMode == 1 ? low : profile.splitMode == 2 ? high : input;
+                    const double preGain = profile.referenceGain * dbToGain (0.3 * measuredReduction);
+                    const double driven = selectedBand * preGain * drive;
+                    const double curvedInput = driven + profile.asymmetry * driven * driven;
+                    const double roundedCurve = std::tanh (curvedInput);
+                    const double angularCurve = curvedInput / (1.0 + 0.75 * std::abs (curvedInput));
+                    const double baseCurve = roundedCurve + profile.curveHardness * (angularCurve - roundedCurve);
+                    const double evenMix = profile.evenHarmonic * (1.0 - 0.65 * levelAmount);
+                    const double oddMix = profile.oddHarmonic * (0.35 + 0.65 * levelAmount);
+                    const double harmonicAmount = profile.harmonicDrive * colour;
+                    const double saturated = baseCurve
                         + evenMix * harmonicAmount * driven * driven
-                        + oddMix * harmonicAmount * driven * driven * driven * 0.30f;
-                    const auto normalizedSaturation = saturated / preGain;
-                    const auto shaped = profile.splitMode == 1 ? high + selectedBand + colour * (normalizedSaturation - selectedBand)
-                                      : profile.splitMode == 2 ? low + selectedBand + colour * (normalizedSaturation - selectedBand)
-                                                               : input + colour * (normalizedSaturation - input);
+                        + oddMix * harmonicAmount * driven * driven * driven * 0.30;
+                    const double normalizedSaturation = saturated / preGain;
+                    const double shaped = profile.splitMode == 1 ? high + selectedBand + colour * (normalizedSaturation - selectedBand)
+                                        : profile.splitMode == 2 ? low + selectedBand + colour * (normalizedSaturation - selectedBand)
+                                                                 : input + colour * (normalizedSaturation - input);
                     auto& x1 = dcInput[modelIndex][ch];
                     auto& y1 = dcOutput[modelIndex][ch];
-                    const auto dcBlocked = shaped - x1 + 0.9995f * y1;
+                    const double dcBlocked = shaped - x1 + 0.9995 * y1;
                     x1 = shaped;
                     y1 = dcBlocked;
                     auto& tone = toneState[modelIndex][ch];
                     tone += toneCoefficients[modelIndex] * (dcBlocked - tone);
-                    const auto trimGain = 1.0f + trimAmount * (trimGains[modelIndex] - 1.0f);
+                    const double trimGain = 1.0 + trimAmount * (trimGains[modelIndex] - 1.0);
                     return (dcBlocked + toneAmount * (tone - dcBlocked)) * trimGain;
                 };
-                float output = processModel (activeTube);
+                double output = processModel (activeTube);
                 if (modelFadeSamples > 0)
                 {
                     const auto oldValue = processModel (previousTube);
@@ -246,10 +247,42 @@ void KomprussrAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
             if (modelFadeSamples > 0 && --modelFadeSamples == 0)
                 previousTube = activeTube;
         }
-        auto outputBlock = juce::dsp::AudioBlock<float> (buffer).getSubBlock (static_cast<size_t> (chunkStart), static_cast<size_t> (chunkSamples));
+        auto outputBlock = juce::dsp::AudioBlock<double> (buffer).getSubBlock (static_cast<size_t> (chunkStart), static_cast<size_t> (chunkSamples));
         valveOversampling.processSamplesDown (outputBlock);
     }
     gainReductionDb.store (peakReduction, std::memory_order_relaxed);
+}
+
+void KomprussrAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midi)
+{
+    const auto numChannels = buffer.getNumChannels();
+    const auto numSamples  = buffer.getNumSamples();
+
+    // No reallocation as long as prepareToPlay reserved enough (see below)
+    doubleBuffer.setSize (numChannels, numSamples, false, false, true);
+
+    for (int ch = 0; ch < numChannels; ++ch)
+    {
+        const auto* src = buffer.getReadPointer (ch);
+        auto* dst = doubleBuffer.getWritePointer (ch);
+        for (int i = 0; i < numSamples; ++i)
+            dst[i] = static_cast<double> (src[i]);
+    }
+
+    processBlockImpl (doubleBuffer, midi);
+
+    for (int ch = 0; ch < numChannels; ++ch)
+    {
+        const auto* src = doubleBuffer.getReadPointer (ch);
+        auto* dst = buffer.getWritePointer (ch);
+        for (int i = 0; i < numSamples; ++i)
+            dst[i] = static_cast<float> (src[i]);
+    }
+}
+
+void KomprussrAudioProcessor::processBlock (juce::AudioBuffer<double>& buffer, juce::MidiBuffer& midi)
+{
+    processBlockImpl(buffer, midi);
 }
 
 void KomprussrAudioProcessor::getStateInformation (juce::MemoryBlock& dest)
