@@ -2,12 +2,14 @@ KOMPRUSSR KU-01 — Linux (VST3)
 
 INSTALACIÓN CON EL SCRIPT / INSTALL WITH THE SCRIPT
 1. Descomprime el archivo .tar.gz.
-2. Abre una terminal dentro de la carpeta extraída y ejecuta: sh install.sh
+2. Abre una terminal dentro de la carpeta extraída y ejecuta: ./instalar.sh
 3. El plugin se instala en ~/.vst3. Vuelve a escanear los plugins en tu programa de música.
 
 1. Extract the .tar.gz archive.
-2. Open a terminal in the extracted folder and run: sh install.sh
+2. Open a terminal in the extracted folder and run: ./instalar.sh
 3. The plug-in is installed to ~/.vst3. Rescan plug-ins in your music software.
+
+Para instalar para todos los usuarios, ejecuta ./instalar.sh sistema. / To install for all users, run ./instalar.sh sistema.
 
 INSTALACIÓN MANUAL / MANUAL INSTALLATION
 Copia la carpeta «Komprussr KU-01.vst3» a ~/.vst3 y vuelve a escanear los plugins.

@@ -4,11 +4,15 @@ Compresor valvular tipo Vari-Mu en formato de plugin de audio (VST3 y AU), con s
 
 Es gratuito y de código abierto. Los paquetes de Windows, macOS y Linux se generan con GitHub Actions; el instalador de Windows se distribuye sin firma digital.
 
-> **Versión 1.0.0 — estado:** el plugin está terminado y listo para su primera versión pública. Se ha probado en Windows con FL Studio; macOS y Linux todavía no se han probado. Las descargas estarán en [Releases](../../releases) cuando se publique la versión.
+> **Versión 1.0.0:** la release ya está publicada. Se ha probado en Windows con FL Studio; macOS y Linux todavía no se han probado.
 
 ## Descarga e instalación
 
-Descarga el archivo de tu sistema desde [Releases](../../releases). Cada release incluye un instalador y un paquete portátil cuando se indica a continuación.
+Descarga el archivo de tu sistema desde [Releases](../../releases):
+
+- **Windows:** `.exe` para instalar automáticamente o `.zip` para instalar el VST3 a mano. El `.exe` no está firmado y puede mostrar el aviso SmartScreen.
+- **macOS:** `.pkg` para instalar VST3 y AU automáticamente o `.zip` para copiarlos a mano.
+- **Linux:** `.tar.gz` con el VST3 y el script opcional `./instalar.sh`.
 
 ### Windows
 
@@ -34,7 +38,7 @@ Los paquetes no están firmados ni notarizados; macOS puede mostrar un aviso de 
 ### Linux
 
 1. Descarga y descomprime el `.tar.gz`.
-2. Para instalar en tu usuario, abre una terminal en la carpeta extraída y ejecuta `sh install.sh`. También puedes copiar `Komprussr KU-01.vst3` a `~/.vst3` manualmente.
+2. Para instalar en tu usuario, abre una terminal en la carpeta extraída y ejecuta `./instalar.sh`. También puedes copiar `Komprussr KU-01.vst3` a `~/.vst3` manualmente.
 3. Abre tu programa de música y vuelve a escanear los plugins. El script no necesita permisos de administrador.
 
 ### Compatibilidad
@@ -49,7 +53,13 @@ Funciona en pistas mono y estéreo. Windows se ha probado en FL Studio; macOS y 
 
 ## Download and installation (English)
 
-**Version 1.0.0.** Download your platform's files from [Releases](../../releases) when the release is published. Each release provides the installer and portable package described below. Windows has been tested with FL Studio; macOS and Linux have not been tested yet.
+**Version 1.0.0 is available in [Releases](../../releases).** Windows has been tested with FL Studio; macOS and Linux have not been tested yet.
+
+Choose the download for your system:
+
+- **Windows:** use the `.exe` for automatic installation or the `.zip` for manual VST3 installation. The `.exe` is unsigned and may trigger SmartScreen.
+- **macOS:** use the `.pkg` to install VST3 and AU automatically, or the `.zip` to install them manually.
+- **Linux:** the `.tar.gz` contains the VST3 and the optional `./instalar.sh` installer script.
 
 ### Windows
 
@@ -67,7 +77,7 @@ The packages are not signed or notarized; macOS may show a security warning duri
 
 ### Linux
 
-Extract the `.tar.gz` archive. To install for your user, open a terminal in the extracted folder and run `sh install.sh`. You can also copy `Komprussr KU-01.vst3` to `~/.vst3` manually. Rescan plug-ins in your music software. The script does not need administrator permissions.
+Extract the `.tar.gz` archive. To install for your user, open a terminal in the extracted folder and run `./instalar.sh`. You can also copy `Komprussr KU-01.vst3` to `~/.vst3` manually. Rescan plug-ins in your music software. The script does not need administrator permissions.
 
 ## Controles
 
