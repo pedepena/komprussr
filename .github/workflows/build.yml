@@ -189,7 +189,7 @@ jobs:
             test -n "$binary"
             echo "lipo -info: $binary"
             lipo -info "$binary"
-            lipo -verify_arch arm64 x86_64 "$binary"
+            lipo "$binary" -verify_arch arm64 x86_64
             otool -L "$binary"
           done
           ZIP="build/package/KOMPRUSSR-KU-01-macOS-$VERSION.zip"
