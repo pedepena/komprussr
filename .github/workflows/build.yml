@@ -66,6 +66,20 @@ jobs:
           & $iscc "/DPluginVersion=$env:VERSION" "/FKOMPRUSSR-KU-01-Windows-$env:VERSION-Setup" installer/KOMPRUSSR.iss
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
+      - name: Crear ZIP portatil de Windows
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $vst3 = Join-Path $PWD 'build\KOMPRUSSR_artefacts\Release\VST3\KOMPRUSSR KU-01.vst3'
+          if (-not (Test-Path -LiteralPath $vst3 -PathType Container)) { throw "No se encontro el bundle VST3: $vst3" }
+          $staging = Join-Path $env:RUNNER_TEMP 'komprussr-windows-portable'
+          $bundle = Join-Path $staging 'KOMPRUSSR KU-01.vst3'
+          New-Item -ItemType Directory -Path $staging -Force | Out-Null
+          Copy-Item -LiteralPath $vst3 -Destination $bundle -Recurse
+          $zip = Join-Path $PWD "installer\output\KOMPRUSSR-KU-01-$env:VERSION-Windows-x64.zip"
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          [System.IO.Compression.ZipFile]::CreateFromDirectory($staging, $zip, [System.IO.Compression.CompressionLevel]::Optimal, $false)
+
       # Firma opcional con SignPath (gratis para codigo abierto). Se salta sola
       # mientras no exista el secreto SIGNPATH_API_TOKEN.
       - name: Subir instalador sin firmar
@@ -101,7 +115,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: KOMPRUSSR-Windows
-          path: installer/output/*.exe
+          path: |
+            installer/output/*.exe
+            installer/output/*.zip
           if-no-files-found: error
 
       # ---------- macOS y Linux ----------
@@ -115,7 +131,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: KOMPRUSSR-macOS
-          path: build/package/*.pkg
+          path: |
+            build/package/*.pkg
+            build/package/*.zip
           if-no-files-found: error
 
       - name: Subir paquete Linux
@@ -146,8 +164,8 @@ jobs:
           generate_release_notes: true
           body: |
             ## Cómo instalar
-            - **Windows:** ejecuta el `.exe` y sigue el asistente.
-            - **macOS:** abre el `.pkg` (si macOS lo bloquea, clic derecho > Abrir). Instala VST3 y AU.
-            - **Linux:** descomprime el `.tar.gz` y ejecuta `./instalar.sh`.
+            - **Windows:** usa el `.exe` para instalarlo automáticamente o el `.zip` para copiar `KOMPRUSSR KU-01.vst3` manualmente. El instalador no está firmado y puede mostrar SmartScreen.
+            - **macOS:** abre el `.pkg` para instalar VST3 y AU, o usa el `.zip` para instalarlos manualmente.
+            - **Linux:** descomprime el `.tar.gz` y ejecuta `./instalar.sh` para instalarlo en tu usuario.
 
             Después, reinicia tu DAW y vuelve a buscar plugins.

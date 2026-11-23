@@ -21,16 +21,22 @@ if [ "$SISTEMA" = "macOS" ]; then
   AU="$(buscar "$NOMBRE.component")"
   if [ -z "$AU" ]; then echo "No se encontro $NOMBRE.component en build/ (falta AU en CMake?)" >&2; exit 1; fi
 
+  # Copia portatil: conserva ambas carpetas de formato en la raiz del ZIP.
+  PORTABLE="$SALIDA/portable"
+  mkdir -p "$PORTABLE/VST3" "$PORTABLE/AU"
+  ditto "$VST3" "$PORTABLE/VST3/$NOMBRE.vst3"
+  ditto "$AU" "$PORTABLE/AU/$NOMBRE.component"
+  # Firma ad-hoc (sin cuenta de Apple) las copias que iran en ambos paquetes.
+  codesign --force --deep --sign - "$PORTABLE/VST3/$NOMBRE.vst3"
+  codesign --force --deep --sign - "$PORTABLE/AU/$NOMBRE.component"
+  ditto -c -k --sequesterRsrc "$PORTABLE" "$SALIDA/KOMPRUSSR-KU-01-macOS-$VERSION.zip"
+
   RAIZ="$SALIDA/raiz"
   mkdir -p "$RAIZ/Library/Audio/Plug-Ins/VST3" "$RAIZ/Library/Audio/Plug-Ins/Components"
-  ditto "$VST3" "$RAIZ/Library/Audio/Plug-Ins/VST3/$NOMBRE.vst3"
-  ditto "$AU" "$RAIZ/Library/Audio/Plug-Ins/Components/$NOMBRE.component"
+  ditto "$PORTABLE/VST3/$NOMBRE.vst3" "$RAIZ/Library/Audio/Plug-Ins/VST3/$NOMBRE.vst3"
+  ditto "$PORTABLE/AU/$NOMBRE.component" "$RAIZ/Library/Audio/Plug-Ins/Components/$NOMBRE.component"
   test -d "$RAIZ/Library/Audio/Plug-Ins/VST3/$NOMBRE.vst3"
   test -d "$RAIZ/Library/Audio/Plug-Ins/Components/$NOMBRE.component"
-
-  # Firma "ad-hoc" (sin cuenta de Apple): evita que el plugin quede marcado como danado.
-  codesign --force --deep --sign - "$RAIZ/Library/Audio/Plug-Ins/VST3/$NOMBRE.vst3"
-  codesign --force --deep --sign - "$RAIZ/Library/Audio/Plug-Ins/Components/$NOMBRE.component"
 
   # Que el instalador siempre ponga los plugins en /Library/Audio/Plug-Ins y los actualice.
   pkgbuild --analyze --root "$RAIZ" "$SALIDA/componentes.plist"
@@ -53,7 +59,7 @@ PY
     --install-location / \
     "$SALIDA/KOMPRUSSR-KU-01-macOS-$VERSION.pkg"
 
-  rm -rf "$RAIZ" "$SALIDA/componentes.plist"
+  rm -rf "$RAIZ" "$PORTABLE" "$SALIDA/componentes.plist"
 else
   PAQUETE="KOMPRUSSR-KU-01-Linux-$VERSION"
   DEST="$SALIDA/$PAQUETE"
