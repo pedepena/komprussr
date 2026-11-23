@@ -20,7 +20,6 @@ UninstallDisplayName={#PluginName}
 OutputDir=output
 OutputBaseFilename=KOMPRUSSR-Setup
 ArchitecturesInstallIn64BitMode=x64
-ArchitecturesAllowed=x64
 PrivilegesRequired=admin
 Compression=lzma2
 SolidCompression=yes
@@ -34,3 +33,19 @@ Source: "..\build\KOMPRUSSR_artefacts\Release\VST3\KOMPRUSSR KU-01.vst3\*"; Dest
 
 [UninstallDelete]
 Type: filesandordirs; Name: "{app}\KOMPRUSSR KU-01.vst3"
+
+[Code]
+function InitializeSetup: Boolean;
+var
+  Version: TWindowsVersion;
+begin
+  GetWindowsVersionEx(Version);
+  if (not IsWin64) or (Version.Major <> 10) or (Version.ProductType <> VER_NT_WORKSTATION) then
+  begin
+    SuppressibleMsgBox('KOMPRUSSR KU-01 requiere Windows 10 u 11 de 64 bits. No se ha instalado nada.',
+      mbCriticalError, MB_OK, IDOK);
+    Result := False;
+    Exit;
+  end;
+  Result := True;
+end;

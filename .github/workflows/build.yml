@@ -19,7 +19,7 @@ jobs:
       matrix:
         include:
           - { os: windows-latest, nombre: Windows }
-          - { os: ubuntu-latest, nombre: Linux }
+          - { os: ubuntu-22.04, nombre: Linux }
           - { os: macos-latest, nombre: macOS }
     env:
       # "true" solo si has creado el secreto SIGNPATH_API_TOKEN (firma de Windows).
@@ -32,7 +32,7 @@ jobs:
       - name: Calcular la version
         shell: bash
         run: |
-          if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then v="${GITHUB_REF_NAME#v}"; else v="1.0.0"; fi
+          if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then v="${GITHUB_REF_NAME#v}"; else v="1.0.1"; fi
           echo "VERSION=$v" >> "$GITHUB_ENV"
 
       - name: Instalar librerias de Linux
@@ -49,11 +49,45 @@ jobs:
           args=(-B build -DCMAKE_BUILD_TYPE=Release)
           if [ "$RUNNER_OS" = "macOS" ]; then
             args+=(-DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -DCMAKE_OSX_DEPLOYMENT_TARGET=10.15)
+          elif [ "$RUNNER_OS" = "Linux" ]; then
+            args+=(-DCMAKE_SHARED_LINKER_FLAGS="-static-libgcc -static-libstdc++" -DCMAKE_MODULE_LINKER_FLAGS="-static-libgcc -static-libstdc++")
           fi
           cmake "${args[@]}"
 
       - name: Compilar
         run: cmake --build build --config Release --parallel
+
+      - name: Comprobar dependencias Linux (GLIBC <= 2.36)
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import pathlib, re, subprocess, sys
+          bundle = pathlib.Path('build/KOMPRUSSR_artefacts/Release/VST3/KOMPRUSSR KU-01.vst3')
+          if not bundle.is_dir():
+              sys.exit(f'No se encontro el bundle VST3: {bundle}')
+          versions = set()
+          dynamic_cpp = set()
+          for file in bundle.rglob('*'):
+              if not file.is_file():
+                  continue
+              result = subprocess.run(['objdump', '-T', str(file)], capture_output=True, text=True)
+              if result.returncode != 0:
+                  continue
+              versions.update(re.findall(r'GLIBC_(\d+(?:\.\d+)+)', result.stdout))
+              needed = subprocess.run(['objdump', '-p', str(file)], capture_output=True, text=True)
+              dynamic_cpp.update(re.findall(r'NEEDED\s+(lib(?:stdc\+\+|gcc_s)\.so[^\s]*)', needed.stdout))
+          def version_tuple(value): return tuple(map(int, value.split('.')))
+          if not versions:
+              sys.exit('objdump no encontro versiones GLIBC en los binarios VST3; no se pudo validar el requisito.')
+          too_new = sorted((v for v in versions if version_tuple(v) > (2, 36)), key=version_tuple)
+          if too_new:
+              sys.exit('El plugin requiere una GLIBC posterior a 2.36: ' + ', '.join(too_new))
+          if dynamic_cpp:
+              sys.exit('No se enlazaron estaticamente estas bibliotecas de C++: ' + ', '.join(sorted(dynamic_cpp)))
+          print('Comprobacion GLIBC correcta. Versiones encontradas:', ', '.join(sorted(versions, key=version_tuple)) or 'ninguna')
+          print('libstdc++ y libgcc no aparecen como dependencias compartidas.')
+          PY
 
       # ---------- Windows ----------
       - name: Crear instalador de Windows
@@ -79,6 +113,24 @@ jobs:
           $zip = Join-Path $PWD "installer\output\KOMPRUSSR-KU-01-$env:VERSION-Windows-x64.zip"
           Add-Type -AssemblyName System.IO.Compression.FileSystem
           [System.IO.Compression.ZipFile]::CreateFromDirectory($staging, $zip, [System.IO.Compression.CompressionLevel]::Optimal, $false)
+
+      - name: Comprobar dependencias del runtime de Windows
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Confirmar runtime estático de Windows
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $plugin = Get-ChildItem 'build\KOMPRUSSR_artefacts\Release\VST3\KOMPRUSSR KU-01.vst3' -Recurse -File | Where-Object { $_.Extension -eq '.vst3' } | Select-Object -First 1
+          if (-not $plugin) { throw 'No se encontro el binario VST3 de Windows.' }
+          $deps = & dumpbin /dependents $plugin.FullName 2>&1
+          if ($LASTEXITCODE -ne 0) { throw "dumpbin fallo: $deps" }
+          $deps | ForEach-Object { Write-Host $_ }
+          if (($deps -join "`n") -match '(?i)\b(MSVC[PR]|VCRUNTIME|CONCRT|VCOMP)[^\s]*\.dll') {
+            throw 'El plugin depende de una DLL redistribuible de Visual C++; se esperaba runtime estatico.'
+          }
+          Write-Host 'Runtime de Visual C++ estatico confirmado.'
 
       # Firma opcional con SignPath (gratis para codigo abierto). Se salta sola
       # mientras no exista el secreto SIGNPATH_API_TOKEN.
@@ -126,6 +178,28 @@ jobs:
         shell: bash
         run: bash packaging/package-unix.sh "$RUNNER_OS" "$VERSION"
 
+      - name: Verificar binarios y paquetes macOS
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          set -euo pipefail
+          for bundle in "build/KOMPRUSSR_artefacts/Release/VST3/KOMPRUSSR KU-01.vst3" "build/KOMPRUSSR_artefacts/Release/AU/KOMPRUSSR KU-01.component"; do
+            test -d "$bundle"
+            binary="$(find "$bundle" -type f -perm -111 | head -n 1)"
+            test -n "$binary"
+            echo "lipo -info: $binary"
+            lipo -info "$binary"
+            lipo -verify_arch arm64 x86_64 "$binary"
+            otool -L "$binary"
+          done
+          ZIP="build/package/KOMPRUSSR-KU-01-macOS-$VERSION.zip"
+          PKG="build/package/KOMPRUSSR-KU-01-macOS-$VERSION.pkg"
+          unzip -l "$ZIP" | grep -F 'KOMPRUSSR KU-01.vst3' >/dev/null
+          unzip -l "$ZIP" | grep -F 'KOMPRUSSR KU-01.component' >/dev/null
+          pkgutil --payload-files "$PKG" | grep -F 'KOMPRUSSR KU-01.vst3' >/dev/null
+          pkgutil --payload-files "$PKG" | grep -F 'KOMPRUSSR KU-01.component' >/dev/null
+          echo 'El ZIP y el PKG contienen VST3 y AU.'
+
       - name: Subir paquete macOS
         if: runner.os == 'macOS'
         uses: actions/upload-artifact@v4
@@ -163,9 +237,14 @@ jobs:
           files: release-assets/*
           generate_release_notes: true
           body: |
+            ## Requisitos mínimos
+            - **Windows:** Windows 10 o Windows 11 de 64 bits.
+            - **macOS:** macOS 10.15 (Catalina) o posterior; binario universal Intel y Apple Silicon.
+            - **Linux:** distribución de 64 bits con glibc 2.35 o posterior y soporte VST3.
+
             ## Cómo instalar
-            - **Windows:** usa el `.exe` para instalarlo automáticamente o el `.zip` para copiar `KOMPRUSSR KU-01.vst3` manualmente. El instalador no está firmado y puede mostrar SmartScreen.
-            - **macOS:** abre el `.pkg` para instalar VST3 y AU, o usa el `.zip` para instalarlos manualmente.
+            - **Windows:** usa el `.exe` para instalarlo automáticamente o el `.zip` para copiar `KOMPRUSSR KU-01.vst3` manualmente a la carpeta VST3 común. El instalador no está firmado y puede mostrar SmartScreen.
+            - **macOS:** abre el `.pkg` para instalar VST3 y AU, o usa el `.zip` para instalarlos manualmente. Los paquetes no están notarizados; Gatekeeper puede mostrar un aviso o bloquear la apertura.
             - **Linux:** descomprime el `.tar.gz` y ejecuta `./instalar.sh` para instalarlo en tu usuario.
 
             Después, reinicia tu DAW y vuelve a buscar plugins.

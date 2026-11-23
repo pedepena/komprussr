@@ -4,7 +4,7 @@ Compresor valvular tipo Vari-Mu en formato de plugin de audio (VST3 y AU), con s
 
 Es gratuito y de código abierto. Los paquetes de Windows, macOS y Linux se generan con GitHub Actions; el instalador de Windows se distribuye sin firma digital.
 
-> **Versión 1.0.0:** la release ya está publicada. Se ha probado en Windows con FL Studio; macOS y Linux todavía no se han probado.
+> **Versión 1.0.1:** preparada para publicarse como release independiente; no reemplaza la 1.0.0. Windows se ha probado con FL Studio; macOS y Linux todavía no se han probado.
 
 ## Descarga e instalación
 
@@ -43,6 +43,8 @@ Los paquetes no están firmados ni notarizados; macOS puede mostrar un aviso de 
 
 ### Compatibilidad
 
+**Requisitos mínimos:** Windows 10 u 11 de 64 bits; macOS 10.15 (Catalina) o posterior (binario universal Intel y Apple Silicon); Linux de 64 bits con glibc 2.35 o posterior y soporte VST3. El instalador de Windows muestra un aviso y no continúa si el sistema no cumple el requisito de Windows 10/11 de 64 bits. En Windows puede aparecer SmartScreen porque el instalador no está firmado. En macOS los paquetes no están notarizados y Gatekeeper puede mostrar un aviso o bloquear su apertura.
+
 | Sistema | Formatos |
 |---|---|
 | Windows | VST3 |
@@ -53,7 +55,7 @@ Funciona en pistas mono y estéreo. Windows se ha probado en FL Studio; macOS y 
 
 ## Download and installation (English)
 
-**Version 1.0.0 is available in [Releases](../../releases).** Windows has been tested with FL Studio; macOS and Linux have not been tested yet.
+**Version 1.0.1 is being prepared as a separate release; it will not replace 1.0.0.** Windows has been tested with FL Studio; macOS and Linux have not been tested yet.
 
 Choose the download for your system:
 
@@ -73,11 +75,13 @@ Choose the download for your system:
 
 **Portable ZIP:** Extract the archive. Copy `VST3/Komprussr KU-01.vst3` to `~/Library/Audio/Plug-Ins/VST3/`. To install AU, copy `AU/Komprussr KU-01.component` to `~/Library/Audio/Plug-Ins/Components/`. Create the folders if needed. Logic uses AU; other applications may use VST3.
 
-The packages are not signed or notarized; macOS may show a security warning during installation or when opening them. If blocked, control-click the package and choose **Open**, or use **System Settings > Privacy & Security > Open Anyway** when offered.
+The packages are not notarized; Gatekeeper may show a warning or block them during installation or when opening them. If blocked, control-click the package and choose **Open**, or use **System Settings > Privacy & Security > Open Anyway** when offered.
 
 ### Linux
 
 Extract the `.tar.gz` archive. To install for your user, open a terminal in the extracted folder and run `./instalar.sh`. You can also copy `Komprussr KU-01.vst3` to `~/.vst3` manually. Rescan plug-ins in your music software. The script does not need administrator permissions.
+
+**Minimum requirements:** Windows 10 or 11 (64-bit); macOS 10.15 (Catalina) or later (universal Intel and Apple Silicon binary); Linux 64-bit with glibc 2.35 or later and VST3 support. The Windows installer displays a warning and stops if the system does not meet the Windows 10/11 64-bit requirement. SmartScreen may warn because the Windows installer is unsigned. The macOS packages are not notarized, so Gatekeeper may show a warning or block them.
 
 ## Controles
 

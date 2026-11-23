@@ -1,5 +1,11 @@
 # Historial de cambios
 
+## 1.0.1 — compatibilidad de instaladores
+- Linux se compila en Ubuntu 22.04; el workflow verifica el límite GLIBC 2.36.
+- Windows usa runtime estático de Visual C++ y el instalador exige Windows 10/11 de 64 bits.
+- macOS conserva el binario universal y macOS 10.15 como mínimo; el workflow verifica VST3 y AU en ambos paquetes.
+- Se conservan los cinco formatos de descarga. Consulta el README para requisitos y avisos de SmartScreen y Gatekeeper.
+
 ## 1.0.0 — primera versión pública
 - Compresor valvular tipo Vari-Mu con los controles Compression, Make Up Gain, Tube y Power.
 - Cinco modelos de válvula inspirados en: 6386U, 6BA6, 6BC8, 6K7 y 6SK7.
