@@ -1,16 +1,25 @@
 cmake_minimum_required(VERSION 3.22)
 project(KOMPRUSSR VERSION 1.0.0 LANGUAGES C CXX)
 
+include(FetchContent)
+
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/JUCE/CMakeLists.txt")
     add_subdirectory(JUCE)
 else()
-    include(FetchContent)
     FetchContent_Declare(juce
         GIT_REPOSITORY https://github.com/juce-framework/JUCE.git
         GIT_TAG 9.0.5
         GIT_SHALLOW TRUE)
     FetchContent_MakeAvailable(juce)
 endif()
+
+# CLAP support
+FetchContent_Declare(clap-juce-extensions
+    GIT_REPOSITORY https://github.com/free-audio/clap-juce-extensions.git
+    GIT_TAG main
+    GIT_SHALLOW TRUE
+)
+FetchContent_MakeAvailable(clap-juce-extensions)
 
 set(KOMPRUSSR_FORMATS VST3)
 if(APPLE)
@@ -32,6 +41,14 @@ juce_add_plugin(KOMPRUSSR
     COPY_PLUGIN_AFTER_BUILD FALSE
     NEEDS_CURL TRUE
 )
+
+# Generate CLAP plugin target
+clap_juce_extensions_plugin(
+    TARGET KOMPRUSSR
+    CLAP_ID "com.pedepena.komprussr"
+    CLAP_FEATURES audio-effect compressor
+)
+
 juce_generate_juce_header(KOMPRUSSR)
 
 juce_add_binary_data(KOMPRUSSR_UI_DATA
@@ -72,6 +89,7 @@ target_compile_definitions(KOMPRUSSR PUBLIC
     JUCE_WEB_BROWSER=0
     JUCE_VST3_CAN_REPLACE_VST2=0
 )
+
 target_link_libraries(KOMPRUSSR PRIVATE
     KOMPRUSSR_UI_DATA
     juce::juce_audio_utils
