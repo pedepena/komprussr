@@ -12,11 +12,13 @@ public:
     void releaseResources() override;
     bool isBusesLayoutSupported (const BusesLayout& layouts) const override;
     void processBlock (juce::AudioBuffer<float>&, juce::MidiBuffer&) override;
+    void processBlock (juce::AudioBuffer<double>&, juce::MidiBuffer&) override;
 
     juce::AudioProcessorEditor* createEditor() override;
     bool hasEditor() const override { return true; }
     const juce::String getName() const override { return JucePlugin_Name; }
     bool acceptsMidi() const override { return false; }
+    bool supportsDoublePrecisionProcessing() const override { return true; }
     bool producesMidi() const override { return false; }
     bool isMidiEffect() const override { return false; }
     double getTailLengthSeconds() const override { return 0.0; }
@@ -44,12 +46,14 @@ private:
     };
     static const ValveModel& modelFor (int index) noexcept;
 
+    void processBlockImpl (juce::AudioBuffer<double>&, juce::MidiBuffer&);
     double currentSampleRate = 44100.0;
-    float envelopeSquared = 0.0f;
+    double envelopeSquared = 0.0;
     float fastReductionDb = 0.0f, slowReductionDb = 0.0f;
-    juce::dsp::Oversampling<float> valveOversampling { 2, 1, juce::dsp::Oversampling<float>::filterHalfBandPolyphaseIIR };
-    juce::AudioBuffer<float> oversampledBuffer;
-    juce::AudioBuffer<float> colourBuffer;
+    juce::AudioBuffer<double> doubleBuffer;
+    juce::dsp::Oversampling<double> valveOversampling { 2, 1, juce::dsp::Oversampling<double>::filterHalfBandPolyphaseIIR };
+    juce::AudioBuffer<double> oversampledBuffer;
+    juce::AudioBuffer<double> colourBuffer;
     int activeTube = 0, previousTube = 0;
     int modelFadeSamples = 0;
     static constexpr int modelFadeLength = 512;
